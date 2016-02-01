@@ -1,6 +1,11 @@
 [% INCLUDE header.tt2 %]
 [% INCLUDE mainup.tt2 %]
 
+<style>
+.ramka_red { border: 1px solid red; background-color: #ffD0D0; }
+.ramka_green { border: 1px solid green; background-color: #99ff99; }
+</style>
+
 <tr>
  <td rowspan=2 width="40px">&nbsp;</td>
  <td height=48 valign="top" align="center"><H1>[% langreq(vars.page_title) %]</H1></td>
@@ -13,41 +18,62 @@
  onclick="TestModules(); TestSQL(); TestSyntax(); TestTT(); TestTimeSlots(); TestShortForm(); TestAppAdd(); TestContract(); CheckReports(); TestTranslait(); TestUpdates()"><br><br>
  
  [% langreq('Раздел 1') %]<br><br>
+ <input type="button" id="test5settings" value="Настройки" onclick="location.href='/autotest/settings.htm?edit=MT'">&nbsp;
  <input type="button" id="test5" value="[% langreq('Модульные тесты') %]" onclick="TestModules()">
  &nbsp;&nbsp;<div id="status_test5" style="display: inline"></div><br><br>
+ 
+ <input type="button" id="test7settings" value="Настройки" onclick="location.href='/autotest/settings.htm?edit=SQL'"> &nbsp;
  <input type="button" id="test7" value="[% langreq('Проверка SQL-запросов') %]" onclick="TestSQL()">
  &nbsp;&nbsp;<div id="status_test7" style="display: inline"></div><br><br>
+ 
+ <input type="button" id="test10settings" value="Настройки" onclick="location.href='/autotest/settings.htm?edit=SY'">&nbsp;
  <input type="button" id="test10" value="[% langreq('Проверка модулей') %]" onclick="TestSyntax()">
  &nbsp;&nbsp;<div id="status_test10" style="display: inline"></div><br><br>
+ 
+ <input type="button" id="test9settings" value="Настройки" onclick="location.href='/autotest/settings.htm?edit=TT'">&nbsp;
  <input type="button" id="test9" value="[% langreq('Проверка страниц') %]" onclick="TestTT()">
  &nbsp;&nbsp;<div id="status_test9" style="display: inline"></div><br><br>
   
  [% langreq('Раздел 2') %]<br><br>
+ <input type="button" id="test1settings" value="Настройки" onclick="location.href='/autotest/settings.htm?edit=TS'">&nbsp;
  <input type="button" id="test1" value="[% langreq('Доступность интервалов') %]" onclick="TestTimeSlots()">
  &nbsp;&nbsp;<div id="status_test1" style="display: inline"></div><br><br>
+ 
+ <input type="button" id="test2settings" value="Настройки" onclick="TestModules()" disabled>&nbsp;
  <input type="button" id="test2" value="[% langreq('Доступность записи | short form') %]" onclick="TestShortForm()">
  &nbsp;&nbsp;<div id="status_test2" style="display: inline"></div><br><br>
+ 
+ <input type="button" id="test3settings" value="Настройки" onclick="location.href='/autotest/settings.htm?edit=AA'">&nbsp;
  <input type="button" id="test3" value="[% langreq('Доступность записи | add app') %]" onclick="TestAppAdd()">
  &nbsp;&nbsp;<div id="status_test3" style="display: inline"></div><br><br>
+ 
+ <input type="button" id="test8settings" value="Настройки" onclick="TestModules()" disabled>&nbsp;
  <input type="button" id="test8" value="[% langreq('Доступность создания договора') %]" onclick="TestContract()">
  &nbsp;&nbsp;<div id="status_test8" style="display: inline"></div><br><br>
+ 
+ <input type="button" id="test4settings" value="Настройки" onclick="location.href='/autotest/settings.htm?edit=RP'">&nbsp;
  <input type="button" id="test4" value="[% langreq('Доступность отчётов') %]" onclick="CheckReports()">
  &nbsp;&nbsp;<div id="status_test4" style="display: inline"></div><br><br>
  
  [% langreq('Раздел 3') %]<br><br>
+ <input type="button" id="test6settings" value="Настройки" onclick="location.href='/autotest/settings.htm?edit=TR'">&nbsp;
  <input type="button" id="test6" value="[% langreq('Проверить перевод') %]" onclick="TestTranslait()">
  &nbsp;&nbsp;<div id="status_test6" style="display: inline"></div><br><br>
+ 
+ <input type="button" id="test11settings" value="Настройки" onclick="location.href='/autotest/settings.htm?edit=UP'">&nbsp;
  <input type="button" id="test11" value="[% langreq('Проверить состояния') %]" onclick="TestUpdates()">
  &nbsp;&nbsp;<div id="status_test11" style="display: inline"></div><br><br>
  </td>
 </tr>
 
 <script>
+[% first_time_alert %]
 
 function TestTimeSlots()
 { //////////////////////////////////////////////////
 
 	$('#test1').attr('disabled', true);
+	$('#status_test1').html('идёт проверка...');
 
 	var dates = [];
 	var d_type = [];
@@ -68,16 +94,19 @@ function TestTimeSlots()
 			{ d_type[a] = 'is' } else { d_type[a] = 'not' };
 		}
 
-	dates[dates.length] = '01.01.2018';
+	dates[dates.length] = getNormalDay(700);
 	d_type[d_type.length] = 'not';
 
+	var centers = [ [% centers %] ];
+	var centers_names = [ [% centers_names %] ];
+	
 	var err_found = 0;
 	var void_found = 0;
 	var err_list = '';
 	var check = 0;	
-	var centers = [ 1, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 		
-			46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61 ];
-	
+	var test_null = [% settings_test_null %];
+	var test_error = [% settings_test_error %];
+
 	for(var a = 0; a < centers.length; a++) {
 		for(var b = 0; b < dates.length; b++) {
 			var err_tmp = testTimes(centers[a], dates[b], d_type[b]);
@@ -86,19 +115,22 @@ function TestTimeSlots()
 			var str_comm = '';
 			if (err_tmp[0]) { str_comm = ' (ошибка)'; };
 			if (err_tmp[1]) { str_comm = ' (пуст)'; };
-			if ( (err_tmp[0] != 0) || (err_tmp[1] != 0) ) {
+			if ( 	((err_tmp[0] != 0) && (test_error != 0)) || 
+				((err_tmp[1] != 0) && (test_null != 0)) ) {
 				if (err_list) { err_list += '\\n'; } 
-				err_list += 'центр: ' + centers[a] + ' дата:' + dates[b] + ' контроль: ' + d_type[b] + str_comm; }
+				err_list += 'центр: ' + centers_names[a] + ' дата:' + dates[b] + ' контроль: ' + d_type[b] + str_comm; }
 			check++;
-			$('#status_test1').html('идёт проверка... '+check+' запросов ( '+centers[a]+' / '+dates[b]+' )');
+			$('#status_test1').html('идёт проверка... '+check+' запросов ( '+centers_names[a]+' / '+dates[b]+' )');
 
 		}; };
 	
-	if (err_found) 
-		{ err_found = '<b>ошибок: ' + err_found+ '</b>&nbsp;&nbsp;'; };
-	if (void_found)
+	if (test_error != 0) {
+		if (!err_found) { err_found = '&nbsp;&nbsp;без ошибок'; };
+		if (err_found) 
+			{ err_found = '<b>ошибок: ' + err_found+ '</b>&nbsp;&nbsp;'; }; 
+		} else { err_found = ''; };
+	if (void_found && (test_null != 0))
 		{ err_found += 'пустых: ' + void_found+ '</b>&nbsp;&nbsp;'; };
-	if (!err_found) { err_found = 'без ошибок'; };
 	
 	$('#test1').attr('disabled', false);
 	
@@ -212,9 +244,9 @@ function TestShortForm()
 	
 		} 
 	
-	if (err_found) { err_found = 'зарегистрировать заявки <b>НЕ получилось</b>&nbsp;&nbsp;' + 
+	if (err_found) { err_found = '<span class="ramka_red">&nbsp;зарегистрировать заявки <b>НЕ получилось</b>&nbsp;</span>&nbsp;&nbsp;' + 
 		'<input type="button" onclick="alert('+"'"+err_found+"'"+')" value="подробнее">';; }
-	else { err_found = 'всё успешно зарегистрировано'; };
+	else { err_found = '<span class="ramka_green">&nbsp;всё успешно зарегистрировано&nbsp;</span>'; };
 	
 	$('#test2').attr('disabled', false);
 	
@@ -279,30 +311,27 @@ function TestAppAdd()
 
 	var err_found = '';
 	
-	var test_num = 5;
-	var test_centers = [1, 39, 29, 61, 53];
-	var test_visat = [19, 16, 13, 10, 7];
-	var test_apptime = [1366, 880, 1023, 1200, 1291];
-	var test_concil_free = [0, 1, 0, 1, 0];
-	var test_citizenship = [70, 1, 19, 30, 98];
+	var test_num = [% settings_collect3_num %];
+	var test_collection = [ [% test3_collection %] ];
+	
+	var settings_autodate = [% settings_autodate %];
+	var settings_fixdate = [ [% settings_fixdate %] ];
+	var settings_fixdate_num = [% settings_fixdate_num %];
+	var fixdate_index = 0;
 	
 	for (var test = 1; test <= test_num; test++) { 
 
-		var appdate = getNormalDay(test);
+		var appdate = ''; 
+		
+		if (settings_autodate) {
+			appdate = getNormalDay(test); }
+		else {	
+			appdate = settings_fixdate[fixdate_index]; };			
 	
-		$('#status_test3').html('идёт проверка... '+test+' (внесение данных)');
+		$('#status_test3').html('идёт проверка... '+test+' / '+test_num+' (внесение данных)');
 	
-		var str_param = '?lang=ru&sessionDuration=129048';
-		str_param += '&cid='+test_centers[test-1]+'&vtype='+test_visat[test-1]+'&pcnt=1&lname-1=SURNAME';
-		str_param += '&fname-1=NAME&passnum-1=0909AUTOTEST&bdate-1=11.11.1980';
-		str_param += '&citizenship-1='+test_citizenship[test-1]+'&rlname-1=&rfname-1=';
-		str_param += '&rmname-1=&rpassnum-1=&rpassdate-1=&rpasswhom-1=&amobile-1=&asaddr-1=&whom=0';
-		str_param += '&whomlname=ФАМИЛИЯ&whomfname=ИМЯ&whommname=ОТЧЕСТВО&whompass=0808AUTOTEST';
-		str_param += '&whompassd=11.11.2010&whompasso=ОВД';
-		str_param += '&shipnum=289&phone=32141234&appdate='+appdate;
-		str_param += '&apptime='+test_apptime[test-1]+'&concilfree-1='+test_concil_free[test-1];
-		str_param += '&save=Сохранить';
-	
+		var str_param =	'?lang=ru&appdate='+appdate+'&save=Сохранить'+test_collection[test-1];
+
 		$.ajax({
 			url: '/appointments/new.htm'+str_param,
 			async: false,
@@ -310,15 +339,16 @@ function TestAppAdd()
 			success: function(data) { if (data.indexOf('Запись на подачу создана успешно') < 0) 
 				{ err_found += 'данные не приняты ('+test+'/'+appdate+')\\n'; }; } });	
 	
-		$('#status_test3').html('идёт проверка... '+test+' (БД)');
+		$('#status_test3').html('идёт проверка... '+test+' / '+test_num+' (БД)');
 	
 		err_found += TestAndClean(test, appdate);
-	
+		fixdate_index++;
+		if (fixdate_index >= settings_fixdate_num) { fixdate_index = 0; };
 		} 
 	
-	if (err_found) { err_found = 'зарегистрировать заявки <b>НЕ получилось</b>&nbsp;&nbsp;' + 
+	if (err_found) { err_found = '<span class="ramka_red">&nbsp;зарегистрировать заявки <b>НЕ получилось</b>&nbsp;</span>&nbsp;&nbsp;' + 
 		'<input type="button" onclick="alert('+"'"+err_found+"'"+')" value="подробнее">';; }
-	else { err_found = 'всё успешно зарегистрировано'; };
+	else { err_found = '<span class="ramka_green">&nbsp;всё успешно зарегистрировано&nbsp;</span>'; };
 
 	$('#test3').attr('disabled', false);
 
@@ -415,9 +445,9 @@ function TestContract()
 		
 	err_found += TestAndClean(test, appdate);	
 		
-	if (err_found) { err_found = 'новый контракт создать <b>НЕ получилось</b>&nbsp;&nbsp;' + 
+	if (err_found) { err_found = '<span class="ramka_red">&nbsp;новый контракт создать <b>НЕ получилось</b>&nbsp;</span>&nbsp;&nbsp;' + 
 		'<input type="button" onclick="alert('+"'"+err_found+"'"+')" value="подробнее">'; }
-	else { err_found = 'всё успешно создано'; };
+	else { err_found = '<span class="ramka_green">&nbsp;всё успешно создано&nbsp;</span>'; };
 
 	$('#test8').attr('disabled', false);
 
@@ -447,6 +477,10 @@ function CheckReports()
 	var rep1date = getNormalDay(1);
 	var rep2date = getNormalDay(2);
 	
+	var en_xml = [% settings_test_xml %];
+	var en_pdf = [% settings_test_pdf %];
+	var en_zip = [% settings_test_zip %];
+	
 	var report_adr = [	
 		'fpvms.htm?sdate='+rep1date+'&center=1&ptype=1&create=Создать отчёт',
 		'fpvms_period.htm?sdate='+rep1date+'&fdate='+rep2date+'&center=1&ptype=1&create=Создать отчёт',
@@ -474,7 +508,7 @@ function CheckReports()
 		'fingers_list.htm?sdate='+rep1date+'&edate='+rep2date+'&center[]=1&rtype=pdf&pStatus[]=1&fpStatus[]=1&create=Создать отчёт',
 		'receivedpass.htm?sdate='+rep1date+'&center=1&create=Создать отчёт',
 		'acquiring.htm?sdate='+rep1date+'&fdate='+rep2date+'&center=1&create=Создать отчёт',
-		'visafees.htm?sdate='+rep1date+'&edate='+rep2date+'&center=1&create=Создать отчёт',
+		'visafees.htm?sdate='+rep1date+'&fdate='+rep2date+'&center=1&create=Создать отчёт',
 		'personal_daily.htm?sdate='+rep1date+'&center=1&rtype=pdf&create=Создать отчёт',
 		'sms.htm?sdate='+rep1date+'&edate='+rep2date+'&center=1&rtype=pdf&create=Создать отчёт',
 		'site_feedback.htm?sdate='+rep1date+'&edate='+rep2date+'&center=1&rtype=pdf&create=Создать отчёт',
@@ -509,29 +543,40 @@ function CheckReports()
 				'паспорта полученные из консульства',
 				'отчет по деятельности сотрудников',
 				'отчет об отправке SMS',
-				'сообщения об ошибках с сайта',
-				
+				'сообщения об ошибках с сайта'				
 		];
 	
+	var report_enabled = [ [% report_enabled %] ];
+	
+	var a_c = 0;
+	var a_l = 0;
+	
 	for(var a = 0; a < report_adr.length; a++) {
-		$('#status_test4').html('идёт проверка... ' + (a+1) + ' / ' + report_adr.length + ' (' + report_index[a] + ')');
-		$.ajax({
-			url: '/report/' + report_adr[a],
-			async: false,
-			dataType: "text",
-			type: 'POST',
-			success: function(data, textStatus) { 
-				if (	(data.indexOf('[Content_Types].xml') < 0) && 
-					(data.indexOf('PK') != 0) &&
-					(data.indexOf('%PDF-') != 0) )	{
-						if (err_found) { err_found += '\\n'; } 
-						err_found += report_index[a]; }; 
-				} });
+		a_l += report_enabled[a]; }
+	
+	for(var a = 0; a < report_adr.length; a++) {
+		if (report_enabled[a] == 1) { 
+			a_c++;
+			$('#status_test4').html('идёт проверка... ' + a_c + ' / ' + a_l + ' (' + report_index[a] + ')');
+			$.ajax({
+				url: '/report/' + report_adr[a],
+				async: false,
+				dataType: "text",
+				type: 'POST',
+				success: function(data, textStatus) { 
+				
+					if (	(!((data.indexOf('[Content_Types].xml') >= 0) && en_xml)) && 
+						(!(((data.indexOf('PK') >= 0) && (data.indexOf('[Content_Types].xml') < 0)) && en_zip)) &&
+						(!((data.indexOf('%PDF-') >= 0) && (data.indexOf('[Content_Types].xml') < 0) && en_pdf)) )	{
+							if (err_found) { err_found += '\\n'; } 
+							err_found += report_index[a]; }; 
+					} });
+			}
 		}	
 			
-	if (err_found) { err_found = '<b>не все отчёты были сформированы</b>&nbsp;&nbsp;' + 
+	if (err_found) { err_found = '<span class="ramka_red">&nbsp;не все отчёты были сформированы&nbsp;</span>&nbsp;&nbsp;' + 
 		'<input type="button" onclick="alert('+"'"+err_found+"'"+')" value="список">'; }
-	else { err_found = 'все отчёты были успешно сформированы'; };
+	else { err_found = '<span class="ramka_green">&nbsp;все отчёты были успешно сформированы&nbsp;</span>'; };
 
 	$('#test4').attr('disabled', false);
 
@@ -552,8 +597,8 @@ function TestTranslait()
 		type: 'POST',
 		success: function(data) { 
 			if (data == '') { 
-				$('#status_test6').html('всё нормально'); }
-			else {	$('#status_test6').html('<b>найдены пробелы в переводе</b>&nbsp;&nbsp;' +
+				$('#status_test6').html('<span class="ramka_green">&nbsp;всё нормально&nbsp;</span>'); }
+			else {	$('#status_test6').html('<span class="ramka_red">&nbsp;найдены пробелы в переводе&nbsp;</span>&nbsp;&nbsp;' +
 				'<input type="button" onclick="alert('+"'"+data+"'"+')" value="список">'); } 
 			} });
 			
@@ -575,8 +620,8 @@ function TestSQL()
 		success: function(data) { 
 			if (data.indexOf('ok') >= 0) { 
 				var test_num = data.substring(data.indexOf('|')+1);
-				$('#status_test7').html('всё нормально ( запросов проверено: '+test_num+' )'); }
-			else {	$('#status_test7').html('<b>найдены несоответствия</b>&nbsp;&nbsp;' +
+				$('#status_test7').html('<span class="ramka_green">&nbsp;всё нормально&nbsp;</span> ( запросов проверено: '+test_num+' )'); }
+			else {	$('#status_test7').html('<span class="ramka_red">&nbsp;найдены несоответствия&nbsp;</span>&nbsp;&nbsp;' +
 				'<input type="button" onclick="alert('+"'"+data+"'"+')" value="список">'); } 
 			} });
 
@@ -597,8 +642,8 @@ function TestSyntax()
 		success: function(data) { 
 			if (data.indexOf('ok') >= 0) { 
 				var test_num = data.substring(data.indexOf('|')+1);
-				$('#status_test10').html('всё нормально ( проверено модулей: '+test_num+' )'); }
-			else {	$('#status_test10').html('<b>найдены ошибки в модулях </b>&nbsp;&nbsp;' +
+				$('#status_test10').html('<span class="ramka_green">&nbsp;всё нормально&nbsp;</span> ( проверено модулей: '+test_num+' )'); }
+			else {	$('#status_test10').html('<span class="ramka_red">&nbsp;найдены ошибки в модулях &nbsp;</span>&nbsp;&nbsp;' +
 				'<input type="button" onclick="alert('+"'"+data+"'"+')" value="список">'); } 
 			} });
 
@@ -619,8 +664,8 @@ function TestModules()
 		success: function(data) { 
 			if (data.indexOf('ok') >= 0) { 
 				var test_num = data.substring(data.indexOf('|')+1);
-				$('#status_test5').html('всё нормально ( тестов: '+test_num+' )'); }
-			else {	$('#status_test5').html('<b>найдены ошибки внутренних функций </b>&nbsp;&nbsp;' +
+				$('#status_test5').html('<span class="ramka_green">&nbsp;всё нормально&nbsp;</span> ( тестов: '+test_num+' )'); }
+			else {	$('#status_test5').html('<span class="ramka_red">&nbsp;найдены ошибки внутренних функций &nbsp;</span>&nbsp;&nbsp;' +
 				'<input type="button" onclick="alert('+"'"+data+"'"+')" value="список">'); } 
 			} });
 
@@ -640,8 +685,8 @@ function TestUpdates()
 		type: 'POST',
 		success: function(data) { 
 			if (data == 'ok') { 
-				$('#status_test11').html('всё нормально'); }
-			else {	$('#status_test11').html('<b>что-то не совсем так </b>&nbsp;&nbsp;' +
+				$('#status_test11').html('<span class="ramka_green">&nbsp;всё нормально&nbsp;</span>'); }
+			else {	$('#status_test11').html('<span class="ramka_red">&nbsp;что-то не совсем так&nbsp;</span>&nbsp;&nbsp;' +
 				'<input type="button" onclick="alert('+"'"+data+"'"+')" value="список">'); } 
 			} });
 
@@ -658,91 +703,10 @@ function TestTT()
 	
 	var err_found = '';
 	
-	var tt_adr = [	
-		'admin/index.htm',		'admin/login.htm',		'admin/register.htm',
-		'admin/success.htm',		'admin/verify.htm',		'admin/complete.htm',
-		'admin/restrict.htm',		'personal/index.htm',		'admin/change_password_expired.htm',
-		'personal/edit.htm',		'personal/password.htm',	'personal/success.htm',
-		'users/index.htm',		'users/new.htm',		'users/locked.htm',
-		'users/roles.htm',		'users/new_role.htm',		'users/role_info.htm',
-		'users/find_user.htm',		'users/set_printer.htm',	'users/send_code.htm',
-		'users/remind.htm',		'users/success_remind.htm',	'users/calc_consil.htm',
-		'users/add_user.htm',		'settings/edit_timeslot.htm',	'settings/index.htm',
-		'settings/centers.htm',		'settings/add_center.htm',	'settings/edit_center.htm',
-		'settings/printers.htm',	'settings/holidays.htm',	'settings/timeslots.htm',
-		'settings/edit_holiday.htm',	'settings/add_holiday.htm',	'settings/visatypes.htm',
-		'settings/add_vtype.htm',	'settings/edit_vtype.htm',	'settings/blacklist.htm',
-		'settings/add_blist.htm',	'settings/exclusions.htm',	'settings/add_excl.htm',
-		'settings/edit_excl.htm',	'settings/pricelist.htm',	'settings/new_rate.htm',
-		'settings/edit_rate.htm',	'settings/companies.htm',	'settings/edit_company.htm',
-		'settings/new_company.htm',	'settings/compdov.htm',		'settings/edit_compdov.htm',
-		'settings/new_compdov.htm',	'settings/load_dhl.htm',	'settings/edit_dhlcity.htm',
-		'settings/dhl_prices.htm',	'settings/templates.htm',	'settings/edit_template.htm',
-		'settings/new_template.htm',	'settings/view_template.htm',	'settings/managers.htm',
-		'settings/cur_rates.htm',	'settings/localisation.htm',	'doc/index.htm',
-		'doc/appointments.htm',		'doc/add_app.htm',		'doc/app_info.htm',
-		'doc/note_info.htm',		'doc/recvideo.htm',		'doc/app_insurance.htm',
-		'doc/edit_app.htm',		'doc/resch_app.htm',		'doc/add_applicant.htm',
-		'doc/print_app.htm',		'doc/individuals.htm',		'doc/juridical.htm',
-		'doc/print_labels.htm',		'doc/print_blabels.htm',	'doc/history.htm',
-		'doc/edit_appl.htm',		'doc/status.htm',		'doc/print_banks.htm',
-		'doc/get_info.htm',		'doc/set_fpstatus.htm',		'doc/app_anketa.htm',
-		'doc/print_anketa.htm',		'doc/save_anketa.htm',		'doc/passrcv.htm',
-		'doc/print_receipt.htm',	'appointments/get_dates.htm',	'appointments/get_times.htm',
-		'appointments/get_vtypes.htm',	'appointments/new.htm',		'appointments/new_ins.htm',
-		'appointments/group.htm',	'appointments/get_nearest.htm', 'appointments/add_applicant.htm',
-		'report/index.htm',		'report/app_list.htm',		'report/app_summary.htm',
-		'report/app_summaryvt.htm',	'report/doc_daily.htm',		'report/concil_summary.htm',
-		'report/doc_summary.htm',	'report/personal_daily.htm',	'report/doc_status.htm',
-		'report/doc_daily_full.htm',	'report/doc_registry.htm',	'report/concil_reg.htm',
-		'report/fpvms.htm',		'report/fpvms3.htm',		'report/jur_1c.htm',
-		'report/sms.htm',		'report/passlist.htm',		'report/sum_passlist.htm',
-		'report/reconc_passlist.htm',	'report/jur_summary.htm',	'report/pers_detail.htm',
-		'report/pers_average.htm',	'report/analize_eff.htm',	'report/jur_alldocs.htm',
-		'report/jur_docs.htm',		'report/outdate.htm',		'report/delivery.htm',
-		'report/docs_fio.htm',		'report/schengen_export.htm',	'report/site_feedback.htm',
-		'report/doc_summary2.htm',	'report/macronumber.htm',	'report/summary_for_payment_type.htm',	
-		'report/fpvms_period.htm',	'report/fpvms3_period.htm',	'report/doc_summary3.htm',
-		'report/refusing.htm',		'report/fingers_list.htm',	'report/receivedpass.htm',
-		'report/visafees.htm',		'report/acquiring.htm',		'individuals/index.htm',
-		'individuals/new_contract.htm',	'individuals/transfer.htm',	'individuals/output.htm',
-		'individuals/doc_info.htm',	'individuals/print_doc.htm',	'individuals/print_all.htm',
-		'individuals/input.htm',	'individuals/set_transfer.htm',	'individuals/check_transfer.htm',
-		'individuals/input_all.htm',	'individuals/payment.htm',	'individuals/edit_contract.htm',
-		'individuals/delivery.htm',	'individuals/find_pcode.htm',	'individuals/print_dhl.htm',
-		'individuals/schengen_reg.htm',	'individuals/for_mofa.htm',	'individuals/schengen_export.htm',
-		'individuals/save_request.htm',	'individuals/received.htm',	'individuals/get_allowed_visa_types.htm',
-		'individuals/new_received.htm',	'juridicals/index.htm',		'individuals/received_confirm.htm',
-		'juridicals/new_contract.htm',	'juridicals/new_contract2.htm',	'juridicals/append_note.htm',
-		'juridicals/notelst.htm',	'juridicals/transfer.htm',	'juridicals/output.htm',
-		'juridicals/doc_info.htm',	'juridicals/print_doc.htm',	'juridicals/print_all.htm',
-		'juridicals/set_transfer.htm',	'juridicals/transfer_all.htm',	'juridicals/input.htm',
-		'juridicals/payment.htm',	'juridicals/edit_contract.htm',	'juridicals/delivery.htm',
-		'juridicals/find_jname.htm',	'juridicals/find_bname.htm',	'juridicals/find_agr.htm',
-		'juridicals/find_pass.htm',	'juridicals/schengen_reg.htm',	'vcs/index.htm',
-		'vcs/new.htm',			'vcs/new0.htm',			'vcs/new1.htm',
-		'vcs/new2.htm',			'vcs/new_v.htm',		'vcs/info_v.htm',
-		'vcs/get_vtypes.htm',		'vcs/get_times.htm',		'vcs/info.htm',
-		'vcs/success.htm',		'vcs/reschedule.htm',		'vcs/cancel.htm',
-		'vcs/status.htm',		'vcs/get_nearest.htm',		'vcs/ivr.htm',
-		'vcs/get_binfo.htm',		'vcs/show_a.htm',		'vcs/new_anketa.htm',
-		'vcs/feedback.htm',		'vcs/short_form.htm',		'vcs/check_payment.htm',
-		'vcs/long_form.htm',		'vcs/link_schengen.htm',	'vcs/print_receipt.htm',
-		'vcs/send_app.htm',		'vcs/showlist.htm',		'vcs/load_foredit.htm',
-		'vcs/num_current.htm',		'vcs/list_contract.htm',	'vcs/send_appointment.htm',
-		'vcs/confirm_app.htm',		'vcs/del_app.htm',		'vcs/find_pcode.htm',
-		'vcs/tmp_print.htm',		'vcs/appinfo.htm',		'vcs/show_print_est.htm',
-		'vcs/post_price.htm',		'agency/index.htm',		'agency/login.htm',
-		'agency/newnt.htm',		'agency/editnt.htm',		'agency/shownt.htm',
-		'agency/regnt.htm',		'agency/confirm.htm',		'agency/updtnt.htm',
-		'agency/saveapp.htm',		'agency/delapp.htm',		'agency/printnt.htm',
-		'agency/printinv.htm',		'agency/get_times.htm',		'agency/xmlnt.htm',
-		'agency/appinfo.htm',		'agency/anketa.htm',		'agency/search.htm',
-		'agency/rmhotel.htm',		'agency/import_note.htm',	'agency/import_xml.htm',
-		'agency/settings.htm',		'api/branches.htm',		'api/branches_auth.htm',
-		'api/appointments.htm',		'nist/index.htm',		'nist/file.htm',
-		'nist/receipt.htm',		'nist/upload.htm',		'nist/download.htm',
-		];
+	var tt_adr = [ [% tt_adr %] ];
+	
+	var check_ref = [% settings_test_ref %];
+	var check_404 = [% settings_test_404 %];
 	
 	for(var a = 0; a < tt_adr.length; a++) {
 		$('#status_test9').html('идёт проверка... ' + (a+1) + ' / ' + tt_adr.length + ' ( ' + tt_adr[a] + ' )');
@@ -753,24 +717,26 @@ function TestTT()
 			type: 'POST',
 			success: 
 				function(data) {
-					if (	(data.indexOf('REF(') >= 0) || 
-						(data.indexOf('SCALAR(') >= 0) || 
-						(data.indexOf('ARRAY(') >= 0) || 
-						(data.indexOf('HASH(') >= 0) || 
-						(data.indexOf('CODE(') >= 0) || 
-						(data.indexOf('GLOB(') >= 0) )	{
-							if (err_found) { err_found += '\\n'; } 
-							err_found += tt_adr[a] +' (ссылка вместо данных)'; } 						},
+					if ( check_ref == 1 ) {
+						if (	(data.indexOf('REF(') >= 0) || 
+							(data.indexOf('SCALAR(') >= 0) || 
+							(data.indexOf('ARRAY(') >= 0) || 
+							(data.indexOf('HASH(') >= 0) || 
+							(data.indexOf('CODE(') >= 0) || 
+							(data.indexOf('GLOB(') >= 0) )	{
+								if (err_found) { err_found += '\\n'; } 
+								err_found += tt_adr[a] +' (ссылка вместо данных)'; } }						},
 			error: 
-				function(data) { 
-					if (err_found) { err_found += '\\n'; } 
-					err_found += tt_adr[a] + ' (недоступна)'; },
+				function(data) {
+					if ( check_404 == 1 ) { 
+						if (err_found) { err_found += '\\n'; } 
+						err_found += tt_adr[a] + ' (недоступна)'; } },
 				});
 		}	
 			
-	if (err_found) { err_found = '<b>не все страницы были сформированы</b>&nbsp;&nbsp;' + 
+	if (err_found) { err_found = '<span class="ramka_red">&nbsp;не все страницы были сформированы&nbsp;</span>&nbsp;&nbsp;' + 
 		'<input type="button" onclick="alert('+"'"+err_found+"'"+')" value="список">'; }
-	else { err_found = 'все страницы были успешно сформированы'; };
+	else { err_found = '<span class="ramka_green">&nbsp;все страницы были успешно сформированы&nbsp;</span>'; };
 
 	$('#test9').attr('disabled', false);
 	

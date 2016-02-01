@@ -1,0 +1,24 @@
+[% INCLUDE header.tt2 %]
+[% INCLUDE mainup.tt2 %]
+
+<tr>
+ <td rowspan=2 width="40px">&nbsp;</td>
+ <td height=48 valign="top" align="center"><H1>[% langreq(vars.page_title) %]</H1></td>
+ <td rowspan=2 width="40px">&nbsp;</td>
+</tr>
+<style>
+.ramka_red { border: 1px solid red; background-color: #ffD0D0; }
+.ramka_green { border: 1px solid green; background-color: #99ff99; }
+.edit_dis { background-color: #E6E6E6; }
+</style>
+
+<input type="hidden" name="edit" value="[% edit_page %]"/>
+
+<tr>
+ <td width="920px" valign="top" height="300px">
+ [% settings_place %]
+ </td>
+</tr>
+
+[% INCLUDE maindown.tt2 %]
+[% INCLUDE footer.tt2 %]
