@@ -39,7 +39,7 @@
  <input type="button" id="test1" value="[% langreq('Доступность интервалов') %]" onclick="TestTimeSlots()">
  &nbsp;&nbsp;<div id="status_test1" style="display: inline"></div><br><br>
  
- <input type="button" id="test2settings" value="Настройки" onclick="TestModules()" disabled>&nbsp;
+ <input type="button" id="test2settings" value="Настройки" onclick="location.href='/autotest/settings.htm?edit=SF'">&nbsp;
  <input type="button" id="test2" value="[% langreq('Доступность записи | short form') %]" onclick="TestShortForm()">
  &nbsp;&nbsp;<div id="status_test2" style="display: inline"></div><br><br>
  
@@ -47,7 +47,7 @@
  <input type="button" id="test3" value="[% langreq('Доступность записи | add app') %]" onclick="TestAppAdd()">
  &nbsp;&nbsp;<div id="status_test3" style="display: inline"></div><br><br>
  
- <input type="button" id="test8settings" value="Настройки" onclick="TestModules()" disabled>&nbsp;
+ <input type="button" id="test8settings" value="Настройки" onclick="location.href='/autotest/settings.htm?edit=TC'">&nbsp;
  <input type="button" id="test8" value="[% langreq('Доступность создания договора') %]" onclick="TestContract()">
  &nbsp;&nbsp;<div id="status_test8" style="display: inline"></div><br><br>
  
@@ -79,8 +79,10 @@ function TestTimeSlots()
 	var d_type = [];
 	
 	var date = new Date();
+	var day_slots_test = [% day_slots_test %];
+	var far_far_day = [% far_far_day %];
 	
-	for(var a = 0; a < 10; a++) {
+	for(var a = 0; a < day_slots_test; a++) {
 		date.setDate(date.getDate() + 1);
 		
 		var date_temp =  date.getDate();
@@ -94,8 +96,9 @@ function TestTimeSlots()
 			{ d_type[a] = 'is' } else { d_type[a] = 'not' };
 		}
 
-	dates[dates.length] = getNormalDay(700);
-	d_type[d_type.length] = 'not';
+	if (far_far_day) {
+		dates[dates.length] = getNormalDay(700);
+		d_type[d_type.length] = 'not'; };
 
 	var centers = [ [% centers %] ];
 	var centers_names = [ [% centers_names %] ];
@@ -125,16 +128,17 @@ function TestTimeSlots()
 		}; };
 	
 	if (test_error != 0) {
-		if (!err_found) { err_found = '&nbsp;&nbsp;без ошибок'; };
-		if (err_found) 
-			{ err_found = '<b>ошибок: ' + err_found+ '</b>&nbsp;&nbsp;'; }; 
-		} else { err_found = ''; };
+		if (!err_found)	{ 
+			err_found = '&nbsp;<span class="ramka_green">&nbsp;без ошибок&nbsp;</span>'; }
+		else { 	err_found = '<span class="ramka_red">&nbsp;<b>ошибок: ' + err_found+ '</b>&nbsp;</span>&nbsp;'; }; 
+		};
+	
 	if (void_found && (test_null != 0))
-		{ err_found += 'пустых: ' + void_found+ '</b>&nbsp;&nbsp;'; };
+		{ err_found += '&nbsp;пустых: ' + void_found+ '</b>&nbsp;&nbsp;'; };
 	
 	$('#test1').attr('disabled', false);
 	
-	$('#status_test1').html('всего проверок: '+check+"&nbsp;&nbsp;"+err_found+
+	$('#status_test1').html('всего проверок: '+check+"&nbsp;"+err_found+
 		'<input type="button" onclick="alert('+"'"+err_list+"'"+')" value="список">');
 	
 } 
@@ -173,34 +177,43 @@ function TestShortForm()
 	var far_far_away1 = getNormalDay(150);
 	var far_far_away2 = getNormalDay(200);
 	
+	var settings_fixdate_s = [ [% settings_test2_fixdate_s %] ];
+	var settings_fixdate_e = [ [% settings_test2_fixdate_e %] ];
+	var settings_test2_fix_num = [% settings_test2_fixdate_num %];
+	var settings_test2_autodate = [% settings_test2_autodate %];
+	var settings_appdate = [ [% settings_test2_appdate %] ];
+	var settings_appdate_num = [ [% settings_test2_appdate_num %] ];
+	
 	var code = '30208ce0cfc95cd1ec2d091b5f4e6638';
 	var captcha = 'dhepdn';
 	
-	var test_num = 5;
-	var test_centers = [1, 39, 29, 61, 53];
-	var test_visat = [19, 16, 13, 10, 7];
-	var test_apptime = [1366, 880, 1023, 1200, 1291];
-	var test_concil_free = [0, 1, 0, 1, 0];
-	var test_citizenship = [70, 1, 19, 30, 98];
+	var test_num = [% settings_collect2_num %];
+	var test2a_collection = [ [% test2a_collection %] ];
+	var test2b_collection = [ [% test2b_collection %] ];
+	
+	var fixdate_index = 0;
+	var appdate_index = 0;
 	
 	for (var test = 1; test <= test_num; test++) { 
 
-		var appdate = getNormalDay(test);
+		var appdate = '';
+		var far_far_away1 = '';
+		var far_far_away2 = '';
+
+		if (settings_test2_autodate) {
+			appdate = getNormalDay(test);
+			far_far_away1 = getNormalDay(150);
+			far_far_away2 = getNormalDay(200); }
+		else {
+			appdate = settings_appdate[appdate_index];
+			far_far_away1 = settings_fixdate_s[fixdate_index];
+			far_far_away2 = settings_fixdate_e[fixdate_index]; };
 	
-		$('#status_test2').html('идёт проверка... '+test+' (1 шаг)');
+		$('#status_test2').html('идёт проверка... '+test+' / '+test_num+' (1 шаг)');
 	
-		var str_param = '?lang=ru';
-		str_param += '&step=1&center='+test_centers[test-1]+'&vtype='+test_visat[test-1];
-		str_param += '&persons=1&fdate='+far_far_away1+'&edate='+far_far_away2;
-		str_param += '&app_1_concil_free='+test_concil_free[test-1]+'&app_1_fname=namefname';
-		str_param += '&app_1_lname=namelname&app_1_passnum=0909autotest';
-		str_param += '&app_1_citizenship='+test_citizenship[test-1]+'&app_1_bdate=11.11.1980';
-		str_param += '&app_1_inlname=фамилия&app_1_infname=имя';
-		str_param += '&app_1_insname=отчество&appdate='+appdate;
-		str_param += '&apptime='+test_apptime[test-1]+'&whom=1&dovlname=dovlname';
-		str_param += '&dovfname=dovfname&dovsname=dovsname&dovbdate=11.11.1980&dovpassnum=0808autotest';
-		str_param += '&dovpassdate=11.11.2010&dovpasswhom=ОВД&phone=3213232&email=email@email.com';
-		str_param += '&address=адрес&shipnum=289&shaddress=shaddress&nextButton=Далее';
+		var str_param = '?lang=ru&step=1&nextButton=Далее'+
+			 	'&fdate='+far_far_away1+'&edate='+far_far_away2+
+				'&appdate='+appdate+test2a_collection[test-1];
 	
 		$.ajax({
 			url: '/vcs/short_form.htm'+str_param,
@@ -209,24 +222,11 @@ function TestShortForm()
 			success: function(data) { if (data.indexOf('Проверьте правильность данных') < 0) 
 				{ err_found += 'не пройден 1 шаг ('+test+'/'+appdate+')\\n'; }; } });	
 
-		$('#status_test2').html('идёт проверка... '+test+' (2 шаг)');
+		$('#status_test2').html('идёт проверка... '+test+' / '+test_num+' (2 шаг)');
 	
-		var str2_param = '?lang=ru';
-		str2_param += '&step=2&whom1=1&center='+test_centers[test-1]+'&vtype='+test_visat[test-1];
-		str2_param += '&persons=1&fdate='+far_far_away1+'&edate='+far_far_away1;
-		str2_param += '&app_1_concil_free='+test_concil_free[test-1]+'&app_1_fname=namefname';
-		str2_param += '&app_1_lname=namelname&app_1_passnum=0909autotest';
-		str2_param += '&app_1_citizenship='+test_citizenship[test-1]+'&app_1_bdate=11.11.1980';
-		str2_param += '&app_1_inlname=фамилия&app_1_infname=имя';
-		str2_param += '&app_1_insname=отчество&app_1_nres=0&app_1_passin=0&whom=1';
-		str2_param += '&app_1__concil_free=0&app_1_anketasrv=0&app_1_anketasrv=0';
-		str2_param += '&app_1_photosrv=0&shipping=1';
-		str2_param += '&needship=1&sms=0&appdate='+appdate+'&apptime='+test_apptime[test-1]+'&printsrv=0';
-		str2_param += '&dovlname=dovlname&dovfname=dovfname&dovsname=dovsname';
-		str2_param += '&dovbdate=11.11.1980&dovpassnum=0808autotest';
-		str2_param += '&dovpassdate=11.11.2010&dovpasswhom=ОВД&phone=3213232&email=email@email.com';
-		str2_param += '&code='+code+'&captcha='+captcha;
-		str2_param += '&address=адрес&shipnum=289&shaddress=shaddress&nextButton=Далее';
+		var str2_param = '?lang=ru&step=2&fdate='+far_far_away1+'&edate='+far_far_away1+
+				'&code='+code+'&captcha='+captcha+'&appdate='+appdate+'&nextButton=Далее'+
+				test2b_collection[test-1];
 	
 		err_found += HackCaptcha(code);
 	
@@ -238,10 +238,14 @@ function TestShortForm()
 				{ err_found += 'не пройден 2 шаг ('+test+'/'+appdate+')\\n'; }; } });
 	
 
-		$('#status_test2').html('идёт проверка... '+test+' (БД)');
+		$('#status_test2').html('идёт проверка... '+test+' / '+test_num+' (БД)');
 	
 		err_found += TestAndClean(test, appdate);
-	
+		
+		appdate_index++;
+		if (appdate_index >= settings_appdate_num) { appdate_index = 0; };
+		fixdate_index++;
+		if (fixdate_index >= settings_test2_fix_num) { fixdate_index = 0; };
 		} 
 	
 	if (err_found) { err_found = '<span class="ramka_red">&nbsp;зарегистрировать заявки <b>НЕ получилось</b>&nbsp;</span>&nbsp;&nbsp;' + 
@@ -362,11 +366,14 @@ function TestContract()
 
 	var err_found = '';
 	
-	var test_num = 5;
-	var test_duration = [30, 60, 90, 120, 150];
-	var test_visat = [10, 16, 13, 10, 7];
+	var test_num = [% settings_collect8_num %];
+	var test_collection = [ [% test8_collection %] ];
 	
-	var appdate = getNormalDay(1);
+	var settings_fixdate_s = [ [% settings_test8_fixdate_s %] ];
+	var settings_fixdate_e = [ [% settings_test8_fixdate_e %] ];
+	var settings_test8_fix_num = [% settings_test8_fixdate_num %];
+	var settings_test8_autodate = [% settings_test8_autodate %];
+	
 	var far_far_away1 = getNormalDay(150);
 	var far_far_away2 = getNormalDay(200);
 	
@@ -404,40 +411,25 @@ function TestContract()
 
 	for (var test = 1; test <= test_num; test++) { 
 
-		$('#status_test8').html('идёт проверка... '+test+' (создание договора)');
+		$('#status_test8').html('идёт проверка... '+test+' / '+test_num+' (создание договора)');
 	
-		var str2_param =
-		'?appid='+aid+'&sessionDuration=3635958&visa='+test_visat[test-1]+
-		'&emptyBankid=on&sms=0&shipping=0&shipnum=&ptype=1'+
-		'&xerox=&inssum=&anketasrv=&printsrv=&req_1_visaType=C'+
-		'&req_1_travelPurp=TU&req_1_startTravel='+far_far_away1+
-		'&req_1_endTravel='+far_far_away1+'&req_1_duration='+test_duration[test-1]+
-		'&req_1_FirstEntry=DK&req_1_IBorderEntry=4'+
-		'&req_1_CBorderEntry=wefwqfwqef&req_1_MainDst=I'+
-		'&req_1_CityDst=wqfwqfwq&req_1_numEntries=M&mpers='+applid+''+
-		'&ipers-'+applid+'='+applid+'&pass-'+applid+'=&passdate-'+applid+'='+
-		'&passwhom-'+applid+'=&bdate-'+applid+'=21.02.1960&flydate-'+applid+'='+far_far_away1+
-		'&lname-'+applid+'=Фамилия'+
-		'&fname-'+applid+'=Имя'+
-		'&mname-'+applid+'=Отчество&request-'+applid+'=1'+
-		'&reqnumber=1&rqVisaType=C&rqTravelPurp=TU'+
-		'&rqNumEntries=M&rqDuration='+test_duration[test-1]+'&rqStartTravel='+far_far_away1+
-		'&rqEndTravel='+far_far_away2+'&rqFirstEntry=DK&rqIBorderEntry=4'+
-		'&rqCBorderEntry=wefwqfwqef&rqMainDst=I'+
-		'&rqCityDst=wqfwqfwq&asnum-'+applid+'='+
-		'&mlname=Фамилия&mfname=Имя&mmname=Отчество'+
-		'&mpass=101010AUTOTEST&mpassdate=11.11.2010&mpasswhom=ОВД'+
-		'&phone=89117889373&address=городулица&create=Создать';
+		var test_str = test_collection[test-1];
+
+		test_str = test_str.replace(/APPLID/g, applid);
+		test_str = test_str.replace(/START_DATE/g, far_far_away1);
+		test_str = test_str.replace(/END_DATE/g, far_far_away2);
+		
+		test_str ='?create=Создать&appid='+aid+test_str;
 		
 		$.ajax({
-			url: '/individuals/new_contract.htm'+str2_param,
+			url: '/individuals/new_contract.htm'+test_str,
 			async: false,
 			type: 'POST',
 			success: function(data) { if (data.indexOf('Договор создан') < 0) 
 				{ err_found += 'не удалось создать договор ('+test+')\\n'; }; } });
 		
 		
-		$('#status_test8').html('идёт проверка... '+test+' (БД)');
+		$('#status_test8').html('идёт проверка... '+test+' / '+test_num+' (БД)');
 	
 		err_found += TestAndCleanDoc(test, appdate);
 	

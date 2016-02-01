@@ -135,6 +135,8 @@ sub autotest
 	
 	($did, my $settings_test1_null) = get_settings($vars, 'test1', 'settings_test_null');
 	($did, my $settings_test1_error) = get_settings($vars, 'test1', 'settings_test_error');
+	($did, my $day_slots_test) = get_settings($vars, 'test1', 'day_slots_test');
+	($did, my $far_far_day) = get_settings($vars, 'test1', 'far_far_day');
 	
 	# RP
 	
@@ -182,6 +184,95 @@ sub autotest
 		$test3_collection .= "', ";
 		}
 	
+	# SF
+	
+	my $test2A_collection = '';
+	my $test2B_collection = '';
+	my $settings_test2_fixdate_num = 0;
+	my $settings_test2_appdate_num = 0;
+	
+	($did, my $settings_collect2_num) = get_settings($vars, 'test2', 'settings_collect_num');
+	
+	for (1..$settings_collect2_num) {
+		$test2A_collection .= "'";
+		$test2B_collection .= "'";
+		
+		my $coll_hash = $vars->db->selallkeys("SELECT Param, Value FROM Autotest ".
+			"WHERE Test = ? AND Param LIKE ?", 'test2A', $_.':%');
+		
+		for my $coll_pair (@$coll_hash) {
+			$coll_pair->{Param} =~ s/^[^:]+?://;
+			$test2A_collection .= '&' . $coll_pair->{Param} . '=' . $coll_pair->{Value}; }	
+		
+		$coll_hash = $vars->db->selallkeys("SELECT Param, Value FROM Autotest ".
+			"WHERE Test = ? AND Param LIKE ?", 'test2B', $_.':%');
+		
+		for my $coll_pair (@$coll_hash) {
+			$coll_pair->{Param} =~ s/^[^:]+?://;
+			$test2B_collection .= '&' . $coll_pair->{Param} . '=' . $coll_pair->{Value}; }	
+		
+		$test2A_collection .= "', ";
+		$test2B_collection .= "', ";
+		}
+
+	($did, my $settings_test2_autodate) = get_settings($vars, 'test2', 'settings_autodate');
+	($did, my $settings_test2_appdate) = get_settings($vars, 'test2', 'settings_appdate');
+	($did, my $settings_test2_fixdate_s) = get_settings($vars, 'test2', 'settings_fixdate_s');
+	($did, my $settings_test2_fixdate_e) = get_settings($vars, 'test2', 'settings_fixdate_e');
+
+	if ($settings_test2_fixdate_s) {
+		my @settings_fixdate_s = split /,/, $settings_test2_fixdate_s;
+		my @settings_fixdate_e = split /,/, $settings_test2_fixdate_e;
+		my @settings_appdate = split /,/, $settings_test2_appdate;
+		$settings_test2_fixdate_s = join "','", @settings_fixdate_s;
+		$settings_test2_fixdate_e = join "','", @settings_fixdate_e;
+		$settings_test2_appdate = join "','", @settings_appdate;
+		$settings_test2_fixdate_s = "'".$settings_test2_fixdate_s."'";
+		$settings_test2_fixdate_e = "'".$settings_test2_fixdate_e."'";
+		$settings_test2_appdate = "'".$settings_test2_appdate."'";
+		$settings_test2_fixdate_s =~ s/\s+//g;
+		$settings_test2_fixdate_e =~ s/\s+//g;
+		$settings_test2_appdate =~ s/\s+//g;
+		$settings_test2_fixdate_num = scalar(@settings_fixdate_s);
+		$settings_test2_appdate_num = scalar(@settings_appdate);
+		}
+
+	# TC
+	
+	my $test8_collection = '';
+	my $settings_test8_fixdate_num = 0;
+	
+	($did, my $settings_collect8_num) = get_settings($vars, 'test8', 'settings_collect_num');
+	($did, my $settings_test8_fixdate_s) = get_settings($vars, 'test8', 'settings_fixdate_s');
+	($did, my $settings_test8_fixdate_e) = get_settings($vars, 'test8', 'settings_fixdate_e');
+	($did, my $settings_test8_autodate) = get_settings($vars, 'test8', 'settings_autodate');
+	
+	if ($settings_fixdate) {
+		my @settings_fixdate_s = split /,/, $settings_test8_fixdate_s;
+		my @settings_fixdate_e = split /,/, $settings_test8_fixdate_e;
+		$settings_test8_fixdate_s = join "','", @settings_fixdate_s;
+		$settings_test8_fixdate_e = join "','", @settings_fixdate_e;
+		$settings_test8_fixdate_s = "'".$settings_test8_fixdate_s."'";
+		$settings_test8_fixdate_e = "'".$settings_test8_fixdate_e."'";
+		$settings_test8_fixdate_s =~ s/\s+//g;
+		$settings_test8_fixdate_e =~ s/\s+//g;
+		$settings_test8_fixdate_num = scalar(@settings_fixdate_s);
+		}
+	
+	for (1..$settings_collect8_num) {
+		$test8_collection .= "'";
+		
+		my $coll_hash = $vars->db->selallkeys("SELECT Param, Value FROM Autotest ".
+			"WHERE Test = ? AND Param LIKE ?", 'test8', $_.':%');
+		
+		for my $coll_pair (@$coll_hash) {
+			$coll_pair->{Param} =~ s/^[^:]+?://;
+			$test8_collection .= '&' . $coll_pair->{Param} . '=' . $coll_pair->{Value}; }	
+		
+		$test8_collection .= "', ";
+		}
+	
+
 	$vars->get_system->pheader($vars);
 	my $tvars = {
 		'langreq'  => sub { return $vars->getLangSesVar(@_) },
@@ -193,19 +284,43 @@ sub autotest
 			'action' => $vars->getform('action')
 					},
 		'tt_adr'	=> $tt_adr,
+		
 		'first_time_alert' => $first_time_alert,
+		
 		'settings_test_ref' => $settings_test9_ref,
 		'settings_test_404' => $settings_test9_404,
 		'settings_test_null' => $settings_test1_null,
 		'settings_test_error' => $settings_test1_error,
+		'day_slots_test' => $day_slots_test,
+		'far_far_day' => $far_far_day,
+		
 		'settings_test_xml' => $settings_test4_xml,
 		'settings_test_pdf' => $settings_test4_pdf,
 		'settings_test_zip' => $settings_test4_zip,
-		'settings_collect3_num' => $settings_collect3_num,
+		
 		'settings_autodate' => $settings_autodate,
 		'settings_fixdate' => $settings_fixdate,
 		'settings_fixdate_num' => $settings_fixdate_num,
+		'settings_collect3_num' => $settings_collect3_num,
 		'test3_collection' => $test3_collection,
+		
+		'settings_collect2_num' => $settings_collect2_num,
+		'test2a_collection' => $test2A_collection,
+		'test2b_collection' => $test2B_collection,
+		'settings_test2_autodate' => $settings_test2_autodate,
+		'settings_test2_fixdate_s' => $settings_test2_fixdate_s,
+		'settings_test2_fixdate_e' => $settings_test2_fixdate_e,
+		'settings_test2_fixdate_num' => $settings_test2_fixdate_num,
+		'settings_test2_appdate' => $settings_test2_appdate,
+		'settings_test2_appdate_num' => $settings_test2_appdate_num,
+		
+		'test8_collection' => $test8_collection,
+		'settings_collect8_num' => $settings_collect8_num,
+		'settings_test8_fixdate_s' => $settings_test8_fixdate_s,
+		'settings_test8_fixdate_e' => $settings_test8_fixdate_e,
+		'settings_test8_fixdate_num' => $settings_test8_fixdate_num,
+		'settings_test8_autodate' => $settings_test8_autodate,
+		
 		'report_enabled'=> $report_enabled,
 		'centers'	=> $centers,
 		'centers_names'	=> $centers_names,
@@ -258,6 +373,12 @@ sub settings
 		$settings .= settings_form_bool($id, 'проверять ошибки/невозможность записаться', $value, 'TS');
 		($id, $value) = get_settings($vars, 'test1', 'settings_test_null');
 		$settings .= settings_form_bool($id, 'проверять пустые списки временных интервалов', $value, 'TS');
+		($id, $value) = get_settings($vars, 'test1', 'far_far_day');
+		$settings .= settings_form_bool($id, 'проверять отдалённый день', $value, 'TS');
+		
+		$settings .= '<b>количество календарных дней для проверки</b><br><br>';
+		($id, $value) = get_settings($vars, 'test1', 'day_slots_test');
+		$settings .= settings_form_str_chng('изменить', $id, $value,  'TS');
 		
 		$settings .= '<b>добавить новый центр в список проверяемых (по номеру)</b><br><br>';
 		$settings .= settings_form_str_add('добавить центр', 'test1', 'centers', 'TS' );
@@ -381,7 +502,7 @@ sub settings
 			my ($did, $value) = get_settings($vars, 'test3', 'settings_autodate');
 			$settings .= settings_form_bool($did, 'автоматический выбор даты', $value, 'AA');
 		
-			$settings .= '<b>список дат для проверки (в формате "дд.мм.гггг, дд.мм.гггг, ...") при выключенном автовыборе</b><br><br>';
+			$settings .= '<b>список дат подачи заявки (в формате "дд.мм.гггг, дд.мм.гггг, ...") при выключенном автовыборе</b><br><br>';
 			($did, $value) = get_settings($vars, 'test3', 'settings_fixdate');
 			$value = '' if !$value;
 			$settings .= settings_form_str_chng('сохранить', $did, $value, 'AA' );
@@ -409,7 +530,7 @@ sub settings
 					'" size="43"><br><br><input type="hidden" name="collect_name_id" '.
 					'value="'.$did.'"><b>набор данных для проверки:</b><br><br>';
 			
-			$settings .= settings_full_collect($vars, 'AA', $collect);
+			$settings .= settings_full_collect($vars, 'test3', $collect);
 			
 			$settings .= 	'<input type="hidden" name="collect" value="'.$collect.'">'.
 					'<input type="hidden" name="ret" value="AA">'.
@@ -467,6 +588,255 @@ sub settings
 				
 			$vars->get_system->redirect($vars->getform('fullhost').
 				'/autotest/settings.htm?edit=AA&collect='.$new_index);
+			}
+		}
+	
+	if ($edit eq 'SF') {
+		$title_add = 'Доступность записи (short form)';
+		
+		my $collect = $vars->getparam('collect') || '';
+		my $del = $vars->getparam('del') || '';
+		my $add = $vars->getparam('add') || '';
+		
+		if (!$collect and !$del and !$add) {
+		
+			$settings .= '<b>настройки проверок</b><br><br>';
+			my ($did, $value) = get_settings($vars, 'test2', 'settings_autodate');
+			$settings .= settings_form_bool($did, 'автоматический выбор даты', $value, 'SF');
+		
+			$settings .= '<b>список дат для проверки (в формате "дд.мм.гггг, дд.мм.гггг, ...") при выключенном автовыборе</b><br><br>';
+			$settings .= 'даты заявки<br>';
+			($did, $value) = get_settings($vars, 'test2', 'settings_appdate');
+			$value = '' if !$value;
+			$settings .= settings_form_str_chng('сохранить', $did, $value, 'SF' );
+			
+			$settings .= 'даты начала поездки<br>';
+			($did, $value) = get_settings($vars, 'test2', 'settings_fixdate_s');
+			$value = '' if !$value;
+			$settings .= settings_form_str_chng('сохранить', $did, $value, 'SF' );
+			
+			$settings .= 'даты окончания поездки<br>';
+			($did, $value) = get_settings($vars, 'test2', 'settings_fixdate_e');
+			$value = '' if !$value;
+			$settings .= settings_form_str_chng('сохранить', $did, $value, 'SF' );
+		
+			$settings .= 	'<b>добавить новый набор данных для проверки</b><br><br>'.
+					'<input type="button" id="collect_add" value="добавить"'.
+					' onclick="location.href=\'/autotest/settings.htm?edit=SF&add=1\'"><br><br>'.
+					'<b>наборы данных для проверки</b><br><br>';
+
+			($did, my $settings_collect2_num) = get_settings($vars, 'test2', 'settings_collect_num');
+
+			for (1..$settings_collect2_num) {
+				($did, my $settings_collect_name) = get_settings($vars, 'test2', 
+					'settings_collect_name_'.$_);
+				$settings .= settings_form_collect('SF', $_, $settings_collect_name); }
+			}
+			
+		elsif ($collect and !$del and !$add) {
+			my ($did, $settings_collect_name) = get_settings($vars, 'test2', 
+					'settings_collect_name_'.$collect);
+					
+			$settings .= 	'<form action="/autotest/collect_chng.htm">'.
+					'<b>название набора:</b><br><br><input type="edit" '.
+					'name="collect_new_name" value="'.$settings_collect_name.
+					'" size="43"><br><br><input type="hidden" name="collect_name_id" '.
+					'value="'.$did.'"><b>набор данных для проверки: ПЕРВЫЙ ШАГ:</b><br><br>';
+			
+			$settings .= settings_full_collect($vars, 'test2A', $collect);
+			
+			$settings .= 	'<input type="hidden" name="collect" value="'.$collect.'">'.
+					'<input type="hidden" name="ret" value="SF">'.
+					'<input type="submit" id="collect_submit" '.
+					'value="сохранить изменения"></form><br>'.
+					'<b>добавить новое поле в набор:</b><br><br>'.
+					'<form action="/autotest/collect_add.htm">'.
+					'<input type="edit" name="param"> = <input type="edit" name="value"><br><br>'.
+					'<input type="hidden" name="test" value="test2A">'.
+					'<input type="hidden" name="collect" value="'.$collect.'">'.
+					'<input type="hidden" name="ret" value="SF">'.
+					'<input type="submit" id="submit" value="добавить"></form><br>';
+			
+			
+			$settings .= 	'<form action="/autotest/collect_chng.htm">'.
+					'<input type="hidden" name="collect_new_name" value="'.$settings_collect_name.
+					'" size="43"><br><br><input type="hidden" name="collect_name_id" '.
+					'value="'.$did.'"><b>набор данных для проверки: ВТОРОЙ ШАГ:</b><br><br>';
+					
+			$settings .= settings_full_collect($vars, 'test2B', $collect);
+			
+			$settings .= 	'<input type="hidden" name="collect" value="'.$collect.'">'.
+					'<input type="hidden" name="ret" value="SF">'.
+					'<input type="submit" id="collect_submit" '.
+					'value="сохранить изменения"></form><br>'.
+					'<b>добавить новое поле в набор:</b><br><br>'.
+					'<form action="/autotest/collect_add.htm">'.
+					'<input type="edit" name="param"> = <input type="edit" name="value"><br><br>'.
+					'<input type="hidden" name="test" value="test2B">'.
+					'<input type="hidden" name="collect" value="'.$collect.'">'.
+					'<input type="hidden" name="ret" value="SF">'.
+					'<input type="submit" id="submit" value="добавить"></form><br>';
+			}
+		elsif ($collect and $del) {
+			my $r = $vars->db->query("DELETE FROM Autotest WHERE Test = ? AND Param LIKE ?", {},
+				'test2', $collect.':%');
+			$r = $vars->db->query("DELETE FROM Autotest WHERE Test = ? AND Param = ?", {},
+				'test2', 'settings_collect_name_'.$collect);
+			my ($did, $value) = get_settings($vars, 'test2', 'settings_collect_num');
+			
+			if ($value > $collect) {
+				for my $col_renum(($collect+1)..$value) {
+					my $new_index = $col_renum - 1;
+					my $coll_hash = $vars->db->selallkeys("SELECT ID, Param FROM Autotest ".
+						"WHERE Test = ? AND Param LIKE ?", 'test2', $col_renum.':%');
+					for my $coll_pair (@$coll_hash) {
+						$coll_pair->{Param} =~ s/^[^:]+?://;
+						$r = $vars->db->query('UPDATE Autotest SET Param = ? WHERE '.
+							'ID = ?', {}, $new_index.':'.$coll_pair->{Param}, 
+							$coll_pair->{ID});
+						}
+					($did, my $name_col) = get_settings($vars, 'test2', 
+						'settings_collect_name_'.$col_renum);
+					$r = $vars->db->query('UPDATE Autotest SET Param = ? WHERE ID = ?', {},
+						'settings_collect_name_'.$new_index, $did);						
+				} }
+			
+			$value--;
+			$r = $vars->db->query('UPDATE Autotest SET Value = ? WHERE test = ? and Param = ?', {},
+				$value, 'test2', 'settings_collect_num');
+			$vars->get_system->redirect($vars->getform('fullhost').'/autotest/settings.htm?edit=SF');
+			}
+		elsif ($add) {
+			my ($did, $new_index) = get_settings($vars, 'test2', 'settings_collect_num');		
+			$new_index++;
+		
+			my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
+				'test2', 'settings_collect_name_'.$new_index, 'новый набор параметров '.$new_index);
+			$r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
+				'test2A', $new_index.':dovpassnum', '0808AUTOTEST');
+			$r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
+				'test2A', $new_index.':app_1_passnum', '0909AUTOTEST');
+			$r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
+				'test2B', $new_index.':dovpassnum', '0808AUTOTEST');
+			$r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
+				'test2B', $new_index.':app_1_passnum', '0909AUTOTEST');
+			$r = $vars->db->query('UPDATE Autotest SET Value = ? WHERE test = ? and Param = ?', {},
+				$new_index, 'test2', 'settings_collect_num');
+				
+			$vars->get_system->redirect($vars->getform('fullhost').
+				'/autotest/settings.htm?edit=SF&collect='.$new_index);
+			}
+		}
+		
+	if ($edit eq 'TC') {
+		$title_add = 'Доступность создания договора';
+		
+		my $collect = $vars->getparam('collect') || '';
+		my $del = $vars->getparam('del') || '';
+		my $add = $vars->getparam('add') || '';
+		
+		if (!$collect and !$del and !$add) {
+		
+			$settings .= '<b>настройки проверок</b><br><br>';
+			my ($did, $value) = get_settings($vars, 'test8', 'settings_autodate');
+			$settings .= settings_form_bool($did, 'автоматический выбор даты', $value, 'TC');
+		
+			$settings .= '<b>список дат подачи заявки (в формате "дд.мм.гггг, дд.мм.гггг, ...") при выключенном автовыборе</b><br><br>';
+			$settings .= 'даты начала поездки<br>';
+			($did, $value) = get_settings($vars, 'test8', 'settings_fixdate_s');
+			$value = '' if !$value;
+			$settings .= settings_form_str_chng('сохранить', $did, $value, 'TC' );
+			
+			$settings .= 'даты окончания поездки<br>';
+			($did, $value) = get_settings($vars, 'test', 'settings_fixdate_e');
+			$value = '' if !$value;
+			$settings .= settings_form_str_chng('сохранить', $did, $value, 'TC' );
+		
+			$settings .= 	'<b>добавить новый набор данных для проверки</b><br><br>'.
+					'<input type="button" id="collect_add" value="добавить"'.
+					' onclick="location.href=\'/autotest/settings.htm?edit=TC&add=1\'"><br><br>'.
+					'<b>наборы данных для проверки</b><br><br>';
+
+			($did, my $settings_collect8_num) = get_settings($vars, 'test8', 'settings_collect_num');
+
+			for (1..$settings_collect8_num) {
+				($did, my $settings_collect_name) = get_settings($vars, 'test8', 
+					'settings_collect_name_'.$_);
+				$settings .= settings_form_collect('TC', $_, $settings_collect_name); }
+			}
+			
+		elsif ($collect and !$del and !$add) {
+			my ($did, $settings_collect_name) = get_settings($vars, 'test8', 
+					'settings_collect_name_'.$collect);
+					
+			$settings .= 	'<form action="/autotest/collect_chng.htm">'.
+					'<b>название набора:</b><br><br><input type="edit" '.
+					'name="collect_new_name" value="'.$settings_collect_name.
+					'" size="43"><br><br><input type="hidden" name="collect_name_id" '.
+					'value="'.$did.'"><b>набор данных для проверки:</b><br>';
+			
+			$settings .= 	'APPLID - автоматически заменяется на номер AppData<br>'.
+					'START_DATE - на дату начала поездки<br>'.
+					'END_DATE - на дату окончания поездки<br><br>';
+			
+			$settings .= settings_full_collect($vars, 'test8', $collect);
+			
+			$settings .= 	'<input type="hidden" name="collect" value="'.$collect.'">'.
+					'<input type="hidden" name="ret" value="TC">'.
+					'<input type="submit" id="collect_submit" '.
+					'value="сохранить изменения"></form><br>'.
+					'<b>добавить новое поле в набор:</b><br><br>'.
+					'<form action="/autotest/collect_add.htm">'.
+					'<input type="edit" name="param"> = <input type="edit" name="value"><br><br>'.
+					'<input type="hidden" name="test" value="test8">'.
+					'<input type="hidden" name="collect" value="'.$collect.'">'.
+					'<input type="hidden" name="ret" value="TC">'.
+					'<input type="submit" id="submit" value="добавить"></form><br>';
+			}
+		elsif ($collect and $del) {
+			my $r = $vars->db->query("DELETE FROM Autotest WHERE Test = ? AND Param LIKE ?", {},
+				'test8', $collect.':%');
+			$r = $vars->db->query("DELETE FROM Autotest WHERE Test = ? AND Param = ?", {},
+				'test8', 'settings_collect_name_'.$collect);
+			my ($did, $value) = get_settings($vars, 'test8', 'settings_collect_num');
+			
+			if ($value > $collect) {
+				for my $col_renum(($collect+1)..$value) {
+					my $new_index = $col_renum - 1;
+					my $coll_hash = $vars->db->selallkeys("SELECT ID, Param FROM Autotest ".
+						"WHERE Test = ? AND Param LIKE ?", 'test8', $col_renum.':%');
+					for my $coll_pair (@$coll_hash) {
+						$coll_pair->{Param} =~ s/^[^:]+?://;
+						$r = $vars->db->query('UPDATE Autotest SET Param = ? WHERE '.
+							'ID = ?', {}, $new_index.':'.$coll_pair->{Param}, 
+							$coll_pair->{ID});
+						}
+					($did, my $name_col) = get_settings($vars, 'test8', 
+						'settings_collect_name_'.$col_renum);
+					$r = $vars->db->query('UPDATE Autotest SET Param = ? WHERE ID = ?', {},
+						'settings_collect_name_'.$new_index, $did);						
+				} }
+			
+			$value--;
+			$r = $vars->db->query('UPDATE Autotest SET Value = ? WHERE test = ? and Param = ?', {},
+				$value, 'test8', 'settings_collect_num');
+			$vars->get_system->redirect($vars->getform('fullhost').'/autotest/settings.htm?edit=TC');
+			}
+		elsif ($add) {
+			my ($did, $new_index) = get_settings($vars, 'test8', 'settings_collect_num');		
+			$new_index++;
+		
+			my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
+				'test8', 'settings_collect_name_'.$new_index, 'новый набор параметров '.$new_index);
+			$r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
+				'test8', $new_index.':whompass', '0808AUTOTEST');
+			$r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
+				'test8', $new_index.':passnum-1', '0909AUTOTEST');
+			$r = $vars->db->query('UPDATE Autotest SET Value = ? WHERE test = ? and Param = ?', {},
+				$new_index, 'test8', 'settings_collect_num');
+				
+			$vars->get_system->redirect($vars->getform('fullhost').
+				'/autotest/settings.htm?edit=TC&collect='.$new_index);
 			}
 		}
 		
@@ -657,7 +1027,7 @@ sub settings_full_collect
 	my $collect_num = shift;
 
 	my $coll_hash = $vars->db->selallkeys("SELECT ID, Param, Value FROM Autotest ".
-		"WHERE Test = ? AND Param LIKE ?", 'test3', $collect_num.':%');
+		"WHERE Test = ? AND Param LIKE ?", $test_index, $collect_num.':%');
 	
 	my $res_str = '';
 	my $index_param = 0;
@@ -668,7 +1038,7 @@ sub settings_full_collect
 		
 		my $protect = 0;
 		$protect = 1 if ($coll_pair->{Value} eq '0808AUTOTEST') or 
-			($coll_pair->{Value} eq '0909AUTOTEST')	or ($coll_pair->{Value} eq '1010AUTOTEST');
+			($coll_pair->{Value} eq '0909AUTOTEST')	or ($coll_pair->{Value} eq '101010AUTOTEST');
 		
 		$res_str .=  '<input type="edit" name="param-'.$index_param.'" value="'.$coll_pair->{Param}.
 			'" '.($protect ? 'readonly class="edit_dis"' : '').'> = <input type="edit" name="value-'.
@@ -1744,6 +2114,340 @@ sub settings_default {
 		
 		};
 	
+	my $test_short_form_step1 = {
+		
+		1 => { 	'center' => '1',			'vtype' => '19',
+			'persons' => '1',			'app_1_concil_free' => '0',
+			'app_1_fname' => 'namefname',		'app_1_lname' => 'namelname',
+			'app_1_passnum' => '0909AUTOTEST',	'app_1_citizenship' => '70',
+			'app_1_bdate' => '11.11.1980',		'app_1_inlname' => 'фамилия',
+			'app_1_infname' => 'имя',		'app_1_insname' => 'отчество',
+			'apptime' => '1366',			'whom' => '1',
+			'dovlname' => 'dovlname',		'dovfname' => 'dovfname',
+			'dovsname' => 'dovsname',		'dovbdate' => '11.11.1980',
+			'dovpassnum' => '0808AUTOTEST',		'dovpassdate' => '11.11.2010',
+			'dovpasswhom' => 'ОВД',			'phone' => '3213232',
+			'email' => 'email@email.com',		'address' => 'адрес',
+			'shipnum' => '289',			'shaddress' => 'shaddress',
+			},
+			
+		2 => { 	'center' => '39',			'vtype' => '16',
+			'persons' => '1',			'app_1_concil_free' => '1',
+			'app_1_fname' => 'namefname',		'app_1_lname' => 'namelname',
+			'app_1_passnum' => '0909AUTOTEST',	'app_1_citizenship' => '1',
+			'app_1_bdate' => '11.11.1980',		'app_1_inlname' => 'фамилия',
+			'app_1_infname' => 'имя',		'app_1_insname' => 'отчество',
+			'apptime' => '880',			'whom' => '1',
+			'dovlname' => 'dovlname',		'dovfname' => 'dovfname',
+			'dovsname' => 'dovsname',		'dovbdate' => '11.11.1980',
+			'dovpassnum' => '0808AUTOTEST',		'dovpassdate' => '11.11.2010',
+			'dovpasswhom' => 'ОВД',			'phone' => '3213232',
+			'email' => 'email@email.com',		'address' => 'адрес',
+			'shipnum' => '289',			'shaddress' => 'shaddress',
+			},
+			
+		3 => { 	'center' => '29',			'vtype' => '13',
+			'persons' => '1',			'app_1_concil_free' => '0',
+			'app_1_fname' => 'namefname',		'app_1_lname' => 'namelname',
+			'app_1_passnum' => '0909AUTOTEST',	'app_1_citizenship' => '19',
+			'app_1_bdate' => '11.11.1980',		'app_1_inlname' => 'фамилия',
+			'app_1_infname' => 'имя',		'app_1_insname' => 'отчество',
+			'apptime' => '1023',			'whom' => '1',
+			'dovlname' => 'dovlname',		'dovfname' => 'dovfname',
+			'dovsname' => 'dovsname',		'dovbdate' => '11.11.1980',
+			'dovpassnum' => '0808AUTOTEST',		'dovpassdate' => '11.11.2010',
+			'dovpasswhom' => 'ОВД',			'phone' => '3213232',
+			'email' => 'email@email.com',		'address' => 'адрес',
+			'shipnum' => '289',			'shaddress' => 'shaddress',
+			},
+		
+		4 => { 	'center' => '61',			'vtype' => '10',
+			'persons' => '1',			'app_1_concil_free' => '1',
+			'app_1_fname' => 'namefname',		'app_1_lname' => 'namelname',
+			'app_1_passnum' => '0909AUTOTEST',	'app_1_citizenship' => '30',
+			'app_1_bdate' => '11.11.1980',		'app_1_inlname' => 'фамилия',
+			'app_1_infname' => 'имя',		'app_1_insname' => 'отчество',
+			'apptime' => '1200',			'whom' => '1',
+			'dovlname' => 'dovlname',		'dovfname' => 'dovfname',
+			'dovsname' => 'dovsname',		'dovbdate' => '11.11.1980',
+			'dovpassnum' => '0808AUTOTEST',		'dovpassdate' => '11.11.2010',
+			'dovpasswhom' => 'ОВД',			'phone' => '3213232',
+			'email' => 'email@email.com',		'address' => 'адрес',
+			'shipnum' => '289',			'shaddress' => 'shaddress',
+			},
+		
+		5 => { 	'center' => '53',			'vtype' => '7',
+			'persons' => '1',			'app_1_concil_free' => '0',
+			'app_1_fname' => 'namefname',		'app_1_lname' => 'namelname',
+			'app_1_passnum' => '0909AUTOTEST',	'app_1_citizenship' => '98',
+			'app_1_bdate' => '11.11.1980',		'app_1_inlname' => 'фамилия',
+			'app_1_infname' => 'имя',		'app_1_insname' => 'отчество',
+			'apptime' => '1291',			'whom' => '1',
+			'dovlname' => 'dovlname',		'dovfname' => 'dovfname',
+			'dovsname' => 'dovsname',		'dovbdate' => '11.11.1980',
+			'dovpassnum' => '0808AUTOTEST',		'dovpassdate' => '11.11.2010',
+			'dovpasswhom' => 'ОВД',			'phone' => '3213232',
+			'email' => 'email@email.com',		'address' => 'адрес',
+			'shipnum' => '289',			'shaddress' => 'shaddress',
+			},
+		};
+	
+	my $test_short_form_step2 = {
+		
+		1 => { 	'whom1' => '1',				'center' => '1',
+			'vtype' => '19',			'persons' => '1',
+			'app_1_concil_free' => '0',		'app_1_fname' => 'namefname',
+			'app_1_lname' => 'namelname',		'app_1_passnum' => '0909AUTOTEST',
+			'app_1_citizenship' => '70',		'app_1_bdate' => '11.11.1980',
+			'app_1_inlname' => 'фамилия',		'app_1_infname' => 'имя',
+			'app_1_insname' => 'отчество',		'app_1_nres' => '0',
+			'app_1_passin' => '0',			'whom' => '1',
+			'shaddress' => 'shaddress',		'app_1_anketasrv' => '0',
+			'app_1_anketasrv' => '0',		'app_1_photosrv' => '0',
+			'shipping' => '1',			'needship' => '1',
+			'sms' => '0',				'apptime' => '1366',
+			'printsrv' => '0',			'dovlname' => 'dovlname',
+			'dovfname' => 'dovfname',		'dovsname' => 'dovsname',
+			'dovbdate' => '11.11.1980',		'dovpassnum' => '0808AUTOTEST',
+			'dovpassdate' => '11.11.2010',		'dovpasswhom' => 'ОВД',
+			'phone' => '3213232',			'email' => 'email@email.com',
+			'address' => 'адрес',			'shipnum' => '289',
+			},
+		
+		2 => { 	'whom1' => '1',				'center' => '39',
+			'vtype' => '16',			'persons' => '1',
+			'app_1_concil_free' => '1',		'app_1_fname' => 'namefname',
+			'app_1_lname' => 'namelname',		'app_1_passnum' => '0909AUTOTEST',
+			'app_1_citizenship' => '1',		'app_1_bdate' => '11.11.1980',
+			'app_1_inlname' => 'фамилия',		'app_1_infname' => 'имя',
+			'app_1_insname' => 'отчество',		'app_1_nres' => '0',
+			'app_1_passin' => '0',			'whom' => '1',
+			'shaddress' => 'shaddress',		'app_1_anketasrv' => '0',
+			'app_1_anketasrv' => '0',		'app_1_photosrv' => '0',
+			'shipping' => '1',			'needship' => '1',
+			'sms' => '0',				'apptime' => '880',
+			'printsrv' => '0',			'dovlname' => 'dovlname',
+			'dovfname' => 'dovfname',		'dovsname' => 'dovsname',
+			'dovbdate' => '11.11.1980',		'dovpassnum' => '0808AUTOTEST',
+			'dovpassdate' => '11.11.2010',		'dovpasswhom' => 'ОВД',
+			'phone' => '3213232',			'email' => 'email@email.com',
+			'address' => 'адрес',			'shipnum' => '289',
+			},
+		
+		3 => { 	'whom1' => '1',				'center' => '29',
+			'vtype' => '13',			'persons' => '1',
+			'app_1_concil_free' => '0',		'app_1_fname' => 'namefname',
+			'app_1_lname' => 'namelname',		'app_1_passnum' => '0909AUTOTEST',
+			'app_1_citizenship' => '19',		'app_1_bdate' => '11.11.1980',
+			'app_1_inlname' => 'фамилия',		'app_1_infname' => 'имя',
+			'app_1_insname' => 'отчество',		'app_1_nres' => '0',
+			'app_1_passin' => '0',			'whom' => '1',
+			'shaddress' => 'shaddress',		'app_1_anketasrv' => '0',
+			'app_1_anketasrv' => '0',		'app_1_photosrv' => '0',
+			'shipping' => '1',			'needship' => '1',
+			'sms' => '0',				'apptime' => '1023',
+			'printsrv' => '0',			'dovlname' => 'dovlname',
+			'dovfname' => 'dovfname',		'dovsname' => 'dovsname',
+			'dovbdate' => '11.11.1980',		'dovpassnum' => '0808AUTOTEST',
+			'dovpassdate' => '11.11.2010',		'dovpasswhom' => 'ОВД',
+			'phone' => '3213232',			'email' => 'email@email.com',
+			'address' => 'адрес',			'shipnum' => '289',
+			},
+		
+		4 => { 	'whom1' => '1',				'center' => '61',
+			'vtype' => '10',			'persons' => '1',
+			'app_1_concil_free' => '1',		'app_1_fname' => 'namefname',
+			'app_1_lname' => 'namelname',		'app_1_passnum' => '0909AUTOTEST',
+			'app_1_citizenship' => '30',		'app_1_bdate' => '11.11.1980',
+			'app_1_inlname' => 'фамилия',		'app_1_infname' => 'имя',
+			'app_1_insname' => 'отчество',		'app_1_nres' => '0',
+			'app_1_passin' => '0',			'whom' => '1',
+			'shaddress' => 'shaddress',		'app_1_anketasrv' => '0',
+			'app_1_anketasrv' => '0',		'app_1_photosrv' => '0',
+			'shipping' => '1',			'needship' => '1',
+			'sms' => '0',				'apptime' => '1200',
+			'printsrv' => '0',			'dovlname' => 'dovlname',
+			'dovfname' => 'dovfname',		'dovsname' => 'dovsname',
+			'dovbdate' => '11.11.1980',		'dovpassnum' => '0808AUTOTEST',
+			'dovpassdate' => '11.11.2010',		'dovpasswhom' => 'ОВД',
+			'phone' => '3213232',			'email' => 'email@email.com',
+			'address' => 'адрес',			'shipnum' => '289',
+			},
+		
+		5 => { 	'whom1' => '1',				'center' => '53',
+			'vtype' => '7',				'persons' => '1',
+			'app_1_concil_free' => '0',		'app_1_fname' => 'namefname',
+			'app_1_lname' => 'namelname',		'app_1_passnum' => '0909AUTOTEST',
+			'app_1_citizenship' => '98',		'app_1_bdate' => '11.11.1980',
+			'app_1_inlname' => 'фамилия',		'app_1_infname' => 'имя',
+			'app_1_insname' => 'отчество',		'app_1_nres' => '0',
+			'app_1_passin' => '0',			'whom' => '1',
+			'shaddress' => 'shaddress',		'app_1_anketasrv' => '0',
+			'app_1_anketasrv' => '0',		'app_1_photosrv' => '0',
+			'shipping' => '1',			'needship' => '1',
+			'sms' => '0',				'apptime' => '1291',
+			'printsrv' => '0',			'dovlname' => 'dovlname',
+			'dovfname' => 'dovfname',		'dovsname' => 'dovsname',
+			'dovbdate' => '11.11.1980',		'dovpassnum' => '0808AUTOTEST',
+			'dovpassdate' => '11.11.2010',		'dovpasswhom' => 'ОВД',
+			'phone' => '3213232',			'email' => 'email@email.com',
+			'address' => 'адрес',			'shipnum' => '289',
+			},
+		};
+	
+	my $test_contract = {
+		
+		1 => { 	
+			'address' => 'городулица',		'sessionDuration' => '3635958',
+			'visa' => '10',				'emptyBankid' => 'on',
+			'sms' => '0',				'shipping' => '0',
+			'shipnum' => '',			'ptype' => '1',
+			'xerox' => '',				'inssum' => '',
+			'anketasrv' => '',			'printsrv' => '',
+			'req_1_visaType' => 'C',		'req_1_travelPurp' => 'TU',
+			'req_1_duration' => '30',		'req_1_FirstEntry' => 'DK',
+			'req_1_IBorderEntry' => '4',		'req_1_CBorderEntry' => 'wefwqfwqef',
+			'req_1_MainDst' => 'I',			'req_1_CityDst' => 'wqfwqfwq',
+			'req_1_numEntries' => 'M',		'req_1_startTravel' => 'START_DATE',
+			'req_1_endTravel' => 'END_DATE',	'mpers' => 'APPLID',
+			'ipers-APPLID' => 'APPLID',		'pass-APPLID' => '',
+			'passdate-APPLID' => '',		'passwhom-APPLID' => '',
+			'bdate-APPLID' => '21.02.1960',		'flydate-APPLID' => 'START_DATE',
+			'lname-APPLID' => 'Фамилия',		'fname-APPLID' => 'Имя',
+			'mname-APPLID' => 'Отчество',		'request-APPLID' => '1',
+			'reqnumber' => '1',			'rqVisaType' => 'C',
+			'rqTravelPurp' => 'TU',			'rqNumEntries' => 'M',
+			'rqDuration' => '30',			'rqStartTravel' => 'START_DATE',
+			'rqEndTravel' => 'END_DATE',		'rqFirstEntry' => 'DK',
+			'rqIBorderEntry' => '4',		'rqCBorderEntry' => 'wefwqfwqef',
+			'rqMainDst' => 'I',			'rqCityDst' => 'wqfwqfwq',
+			'asnum-APPLID' => '',			'mlname' => 'Фамилия',
+			'mfname' => 'Имя',			'mmname' => 'Отчество',
+			'mpass' => '101010AUTOTEST',		'mpassdate' => '11.11.2010',
+			'mpasswhom' => 'ОВД',			'phone' => '89117889373',
+			},
+			
+		2 => { 	
+			'address' => 'городулица',		'sessionDuration' => '3635958',
+			'visa' => '16',				'emptyBankid' => 'on',
+			'sms' => '0',				'shipping' => '0',
+			'shipnum' => '',			'ptype' => '1',
+			'xerox' => '',				'inssum' => '',
+			'anketasrv' => '',			'printsrv' => '',
+			'req_1_visaType' => 'C',		'req_1_travelPurp' => 'TU',
+			'req_1_duration' => '60',		'req_1_FirstEntry' => 'DK',
+			'req_1_IBorderEntry' => '4',		'req_1_CBorderEntry' => 'wefwqfwqef',
+			'req_1_MainDst' => 'I',			'req_1_CityDst' => 'wqfwqfwq',
+			'req_1_numEntries' => 'M',		'req_1_startTravel' => 'START_DATE',
+			'req_1_endTravel' => 'END_DATE',	'mpers' => 'APPLID',
+			'ipers-APPLID' => 'APPLID',		'pass-APPLID' => '',
+			'passdate-APPLID' => '',		'passwhom-APPLID' => '',
+			'bdate-APPLID' => '21.02.1960',		'flydate-APPLID' => 'START_DATE',
+			'lname-APPLID' => 'Фамилия',		'fname-APPLID' => 'Имя',
+			'mname-APPLID' => 'Отчество',		'request-APPLID' => '1',
+			'reqnumber' => '1',			'rqVisaType' => 'C',
+			'rqTravelPurp' => 'TU',			'rqNumEntries' => 'M',
+			'rqDuration' => '60',			'rqStartTravel' => 'START_DATE',
+			'rqEndTravel' => 'END_DATE',		'rqFirstEntry' => 'DK',
+			'rqIBorderEntry' => '4',		'rqCBorderEntry' => 'wefwqfwqef',
+			'rqMainDst' => 'I',			'rqCityDst' => 'wqfwqfwq',
+			'asnum-APPLID' => '',			'mlname' => 'Фамилия',
+			'mfname' => 'Имя',			'mmname' => 'Отчество',
+			'mpass' => '101010AUTOTEST',		'mpassdate' => '11.11.2010',
+			'mpasswhom' => 'ОВД',			'phone' => '89117889373',
+			},
+			
+		3 => { 	
+			'address' => 'городулица',		'sessionDuration' => '3635958',
+			'visa' => '13',				'emptyBankid' => 'on',
+			'sms' => '0',				'shipping' => '0',
+			'shipnum' => '',			'ptype' => '1',
+			'xerox' => '',				'inssum' => '',
+			'anketasrv' => '',			'printsrv' => '',
+			'req_1_visaType' => 'C',		'req_1_travelPurp' => 'TU',
+			'req_1_duration' => '90',		'req_1_FirstEntry' => 'DK',
+			'req_1_IBorderEntry' => '4',		'req_1_CBorderEntry' => 'wefwqfwqef',
+			'req_1_MainDst' => 'I',			'req_1_CityDst' => 'wqfwqfwq',
+			'req_1_numEntries' => 'M',		'req_1_startTravel' => 'START_DATE',
+			'req_1_endTravel' => 'END_DATE',	'mpers' => 'APPLID',
+			'ipers-APPLID' => 'APPLID',		'pass-APPLID' => '',
+			'passdate-APPLID' => '',		'passwhom-APPLID' => '',
+			'bdate-APPLID' => '21.02.1960',		'flydate-APPLID' => 'START_DATE',
+			'lname-APPLID' => 'Фамилия',		'fname-APPLID' => 'Имя',
+			'mname-APPLID' => 'Отчество',		'request-APPLID' => '1',
+			'reqnumber' => '1',			'rqVisaType' => 'C',
+			'rqTravelPurp' => 'TU',			'rqNumEntries' => 'M',
+			'rqDuration' => '90',			'rqStartTravel' => 'START_DATE',
+			'rqEndTravel' => 'END_DATE',		'rqFirstEntry' => 'DK',
+			'rqIBorderEntry' => '4',		'rqCBorderEntry' => 'wefwqfwqef',
+			'rqMainDst' => 'I',			'rqCityDst' => 'wqfwqfwq',
+			'asnum-APPLID' => '',			'mlname' => 'Фамилия',
+			'mfname' => 'Имя',			'mmname' => 'Отчество',
+			'mpass' => '101010AUTOTEST',		'mpassdate' => '11.11.2010',
+			'mpasswhom' => 'ОВД',			'phone' => '89117889373',
+			},
+		
+		4 => { 	
+			'address' => 'городулица',		'sessionDuration' => '3635958',
+			'visa' => '10',				'emptyBankid' => 'on',
+			'sms' => '0',				'shipping' => '0',
+			'shipnum' => '',			'ptype' => '1',
+			'xerox' => '',				'inssum' => '',
+			'anketasrv' => '',			'printsrv' => '',
+			'req_1_visaType' => 'C',		'req_1_travelPurp' => 'TU',
+			'req_1_duration' => '120',		'req_1_FirstEntry' => 'DK',
+			'req_1_IBorderEntry' => '4',		'req_1_CBorderEntry' => 'wefwqfwqef',
+			'req_1_MainDst' => 'I',			'req_1_CityDst' => 'wqfwqfwq',
+			'req_1_numEntries' => 'M',		'req_1_startTravel' => 'START_DATE',
+			'req_1_endTravel' => 'END_DATE',	'mpers' => 'APPLID',
+			'ipers-APPLID' => 'APPLID',		'pass-APPLID' => '',
+			'passdate-APPLID' => '',		'passwhom-APPLID' => '',
+			'bdate-APPLID' => '21.02.1960',		'flydate-APPLID' => 'START_DATE',
+			'lname-APPLID' => 'Фамилия',		'fname-APPLID' => 'Имя',
+			'mname-APPLID' => 'Отчество',		'request-APPLID' => '1',
+			'reqnumber' => '1',			'rqVisaType' => 'C',
+			'rqTravelPurp' => 'TU',			'rqNumEntries' => 'M',
+			'rqDuration' => '120',			'rqStartTravel' => 'START_DATE',
+			'rqEndTravel' => 'END_DATE',		'rqFirstEntry' => 'DK',
+			'rqIBorderEntry' => '4',		'rqCBorderEntry' => 'wefwqfwqef',
+			'rqMainDst' => 'I',			'rqCityDst' => 'wqfwqfwq',
+			'asnum-APPLID' => '',			'mlname' => 'Фамилия',
+			'mfname' => 'Имя',			'mmname' => 'Отчество',
+			'mpass' => '101010AUTOTEST',		'mpassdate' => '11.11.2010',
+			'mpasswhom' => 'ОВД',			'phone' => '89117889373',
+			},
+		
+		5 => { 	
+			'address' => 'городулица',		'sessionDuration' => '3635958',
+			'visa' => '7',				'emptyBankid' => 'on',
+			'sms' => '0',				'shipping' => '0',
+			'shipnum' => '',			'ptype' => '1',
+			'xerox' => '',				'inssum' => '',
+			'anketasrv' => '',			'printsrv' => '',
+			'req_1_visaType' => 'C',		'req_1_travelPurp' => 'TU',
+			'req_1_duration' => '150',		'req_1_FirstEntry' => 'DK',
+			'req_1_IBorderEntry' => '4',		'req_1_CBorderEntry' => 'wefwqfwqef',
+			'req_1_MainDst' => 'I',			'req_1_CityDst' => 'wqfwqfwq',
+			'req_1_numEntries' => 'M',		'req_1_startTravel' => 'START_DATE',
+			'req_1_endTravel' => 'END_DATE',	'mpers' => 'APPLID',
+			'ipers-APPLID' => 'APPLID',		'pass-APPLID' => '',
+			'passdate-APPLID' => '',		'passwhom-APPLID' => '',
+			'bdate-APPLID' => '21.02.1960',		'flydate-APPLID' => 'START_DATE',
+			'lname-APPLID' => 'Фамилия',		'fname-APPLID' => 'Имя',
+			'mname-APPLID' => 'Отчество',		'request-APPLID' => '1',
+			'reqnumber' => '1',			'rqVisaType' => 'C',
+			'rqTravelPurp' => 'TU',			'rqNumEntries' => 'M',
+			'rqDuration' => '150',			'rqStartTravel' => 'START_DATE',
+			'rqEndTravel' => 'END_DATE',		'rqFirstEntry' => 'DK',
+			'rqIBorderEntry' => '4',		'rqCBorderEntry' => 'wefwqfwqef',
+			'rqMainDst' => 'I',			'rqCityDst' => 'wqfwqfwq',
+			'asnum-APPLID' => '',			'mlname' => 'Фамилия',
+			'mfname' => 'Имя',			'mmname' => 'Отчество',
+			'mpass' => '101010AUTOTEST',		'mpassdate' => '11.11.2010',
+			'mpasswhom' => 'ОВД',			'phone' => '89117889373',
+			},
+		};
+	
 	my $db_connect = VCS::Config->getConfig();
 
 	my $r = $vars->db->query('CREATE TABLE Autotest (ID INT NOT NULL AUTO_INCREMENT, '.
@@ -1769,6 +2473,10 @@ sub settings_default {
 			'test1', 'settings_test_null', 1);
 	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
 			'test1', 'settings_test_error', 1);
+	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
+			'test1', 'day_slots_test', 10);
+	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
+			'test1', 'far_far_day', 1);
 	
 	# SQL
 	
@@ -1838,9 +2546,58 @@ sub settings_default {
 			'test3', 'settings_collect_num', scalar(keys %$test_addapp));
 	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
 			'test3', 'settings_autodate', 1);
-		my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
+	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
 			'test3', 'settings_fixdate', '');
 	
+	# SF
+	
+	for my $test ( keys %$test_short_form_step1 ) {
+		for my $param ( keys %{$test_short_form_step1->{$test}} ) {
+			my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) '.
+				'VALUES (?,?,?)', {}, 'test2A', $test.':'.$param, $test_short_form_step1->{$test}->{$param} ); 
+			}; 
+		my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) '.
+				'VALUES (?,?,?)', {}, 'test2', 'settings_collect_name_'.$test, 'встроенный набор параметров '.$test ); 
+		};
+
+	for my $test ( keys %$test_short_form_step2 ) {
+		for my $param ( keys %{$test_short_form_step2->{$test}} ) {
+			my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) '.
+				'VALUES (?,?,?)', {}, 'test2B', $test.':'.$param, $test_short_form_step2->{$test}->{$param} ); 
+			};  
+		};
+	
+	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
+			'test2', 'settings_collect_num', scalar(keys %$test_short_form_step1));
+	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
+			'test2', 'settings_autodate', 1);
+	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
+			'test2', 'settings_appdate', '');
+	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
+			'test2', 'settings_fixdate_s', '');
+	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
+			'test2', 'settings_fixdate_e', '');
+	
+	# TC
+	for my $test ( keys %$test_contract ) {
+		for my $param ( keys %{$test_contract->{$test}} ) {
+			my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) '.
+				'VALUES (?,?,?)', {}, 'test8', $test.':'.$param, $test_contract->{$test}->{$param} ); 
+			};  
+		
+		my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) '.
+				'VALUES (?,?,?)', {}, 'test8', 'settings_collect_name_'.$test, 'встроенный набор параметров '.$test ); 
+		};
+	
+	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
+			'test8', 'settings_collect_num', scalar(keys %$test_contract));
+	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
+			'test8', 'settings_fixdate_s', '');
+	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
+			'test8', 'settings_fixdate_e', '');
+	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
+			'test8', 'settings_autodate', 1);
+			
 	return $db_connect->{db}->{dbname};	
 	}
 
