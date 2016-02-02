@@ -211,12 +211,16 @@ function TestShortForm()
 	
 		$('#status_test2').html('идёт проверка... '+test+' / '+test_num+' (1 шаг)');
 	
-		var str_param = '?lang=ru&step=1&nextButton=Далее'+
-			 	'&fdate='+far_far_away1+'&edate='+far_far_away2+
-				'&appdate='+appdate+test2a_collection[test-1];
-	
+		var test_str = test2a_collection[test-1];
+
+		test_str = test_str.replace(/APP_DATE/g, appdate);
+		test_str = test_str.replace(/START_DATE/g, far_far_away1);
+		test_str = test_str.replace(/END_DATE/g, far_far_away2);
+		
+		test_str = '?lang=ru&step=1&nextButton=Далее'+test_str;
+		
 		$.ajax({
-			url: '/vcs/short_form.htm'+str_param,
+			url: '/vcs/short_form.htm'+test_str,
 			async: false,
 			type: 'POST',
 			success: function(data) { if (data.indexOf('Проверьте правильность данных') < 0) 
@@ -224,14 +228,18 @@ function TestShortForm()
 
 		$('#status_test2').html('идёт проверка... '+test+' / '+test_num+' (2 шаг)');
 	
-		var str2_param = '?lang=ru&step=2&fdate='+far_far_away1+'&edate='+far_far_away1+
-				'&code='+code+'&captcha='+captcha+'&appdate='+appdate+'&nextButton=Далее'+
-				test2b_collection[test-1];
+		test_str = test2b_collection[test-1];
+		
+		test_str = test_str.replace(/APP_DATE/g, appdate);
+		test_str = test_str.replace(/START_DATE/g, far_far_away1);
+		test_str = test_str.replace(/END_DATE/g, far_far_away2);
+		
+		test_str = '?lang=ru&step=2&nextButton=Далее'+'&code='+code+'&captcha='+captcha+test_str;
 	
 		err_found += HackCaptcha(code);
 	
 		$.ajax({
-			url: '/vcs/short_form.htm'+str2_param,
+			url: '/vcs/short_form.htm'+test_str,
 			async: false,
 			type: 'POST',
 			success: function(data) { if (data.indexOf('VMS &mdash; Информация о записи') < 0) 
@@ -334,10 +342,12 @@ function TestAppAdd()
 	
 		$('#status_test3').html('идёт проверка... '+test+' / '+test_num+' (внесение данных)');
 	
-		var str_param =	'?lang=ru&appdate='+appdate+'&save=Сохранить'+test_collection[test-1];
-
+		var test_str = test_collection[test-1];
+		
+		test_str = test_str.replace(/APP_DATE/g, appdate);
+		
 		$.ajax({
-			url: '/appointments/new.htm'+str_param,
+			url: '/appointments/new.htm?lang=ru&save=Сохранить'+test_str,
 			async: false,
 			type: 'POST',
 			success: function(data) { if (data.indexOf('Запись на подачу создана успешно') < 0) 
@@ -371,11 +381,14 @@ function TestContract()
 	
 	var settings_fixdate_s = [ [% settings_test8_fixdate_s %] ];
 	var settings_fixdate_e = [ [% settings_test8_fixdate_e %] ];
+	var fixdate_index = 0;
 	var settings_test8_fix_num = [% settings_test8_fixdate_num %];
 	var settings_test8_autodate = [% settings_test8_autodate %];
 	
-	var far_far_away1 = getNormalDay(150);
-	var far_far_away2 = getNormalDay(200);
+	var far_far_away1;
+	var far_far_away2;
+	
+	var appdate = getNormalDay(1);
 	
 	var aid = 0;
 	var applid = 0;
@@ -407,11 +420,18 @@ function TestContract()
 			else { 	aid = data.substring(0,data.indexOf('|'));
 				applid = data.substring(data.indexOf('|')+1);	
 				}; } });
-	
 
 	for (var test = 1; test <= test_num; test++) { 
 
 		$('#status_test8').html('идёт проверка... '+test+' / '+test_num+' (создание договора)');
+	
+		if (settings_test8_autodate) {
+			far_far_away1 = getNormalDay(150);
+			far_far_away2 = getNormalDay(200); }
+		else {	
+			far_far_away1 = settings_fixdate_s[fixdate_index];
+			far_far_away2 = settings_fixdate_e[fixdate_index]; };	
+		
 	
 		var test_str = test_collection[test-1];
 
@@ -432,7 +452,8 @@ function TestContract()
 		$('#status_test8').html('идёт проверка... '+test+' / '+test_num+' (БД)');
 	
 		err_found += TestAndCleanDoc(test, appdate);
-	
+		fixdate_index++;
+		if (fixdate_index >= settings_test8_fix_num) { fixdate_index = 0; };
 		} 
 		
 	err_found += TestAndClean(test, appdate);	

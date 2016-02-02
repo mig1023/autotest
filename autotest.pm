@@ -78,7 +78,6 @@ sub getContent
 		$self->collect_add($task,$id,$template);
 
 	} else {
-		# redirect
 		$vars->get_system->redirect($vars->getform('fullhost').'/admin/login.htm');
 	}
 
@@ -105,8 +104,8 @@ sub autotest
 	
 		my $db_name = settings_default($vars);
 		$first_time_alert = "alert('Модуль самотестирования запущен впервые, подключена новая БД или ".
-				"данные настроек были утеряны. В БД " . $db_name . " создана таблица Autotest ".
-				"с настройками по умолчанию.')";
+				"данные настроек были утеряны.\\nВ текущей БД " . $db_name . " создана таблица ".
+				"Autotest с настройками по умолчанию.')";
 		};
 	
 	# TT
@@ -528,7 +527,9 @@ sub settings
 					'<b>название набора:</b><br><br><input type="edit" '.
 					'name="collect_new_name" value="'.$settings_collect_name.
 					'" size="43"><br><br><input type="hidden" name="collect_name_id" '.
-					'value="'.$did.'"><b>набор данных для проверки:</b><br><br>';
+					'value="'.$did.'"><b>набор данных для проверки:</b><br>';
+			
+			$settings .= 	'APP_DATE - автоматически заменяется на дату подачи заявки<br><br>';
 			
 			$settings .= settings_full_collect($vars, 'test3', $collect);
 			
@@ -641,7 +642,11 @@ sub settings
 					'<b>название набора:</b><br><br><input type="edit" '.
 					'name="collect_new_name" value="'.$settings_collect_name.
 					'" size="43"><br><br><input type="hidden" name="collect_name_id" '.
-					'value="'.$did.'"><b>набор данных для проверки: ПЕРВЫЙ ШАГ:</b><br><br>';
+					'value="'.$did.'"><b>набор данных для проверки: ПЕРВЫЙ ШАГ:</b><br>';
+			
+			$settings .= 	'APP_DATE - автоматически заменяется на дату подачи заявки<br>'.
+					'START_DATE - на дату начала поездки<br>'.
+					'END_DATE - на дату окончания поездки<br><br>';
 			
 			$settings .= settings_full_collect($vars, 'test2A', $collect);
 			
@@ -661,7 +666,11 @@ sub settings
 			$settings .= 	'<form action="/autotest/collect_chng.htm">'.
 					'<input type="hidden" name="collect_new_name" value="'.$settings_collect_name.
 					'" size="43"><br><br><input type="hidden" name="collect_name_id" '.
-					'value="'.$did.'"><b>набор данных для проверки: ВТОРОЙ ШАГ:</b><br><br>';
+					'value="'.$did.'"><b>набор данных для проверки: ВТОРОЙ ШАГ:</b><br>';
+			
+			$settings .= 	'APP_DATE - автоматически заменяется на дату подачи заявки<br>'.
+					'START_DATE - на дату начала поездки<br>'.
+					'END_DATE - на дату окончания поездки<br><br>';
 					
 			$settings .= settings_full_collect($vars, 'test2B', $collect);
 			
@@ -829,9 +838,7 @@ sub settings
 			my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
 				'test8', 'settings_collect_name_'.$new_index, 'новый набор параметров '.$new_index);
 			$r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
-				'test8', $new_index.':whompass', '0808AUTOTEST');
-			$r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
-				'test8', $new_index.':passnum-1', '0909AUTOTEST');
+				'test8', $new_index.':mpass', '101010AUTOTEST');
 			$r = $vars->db->query('UPDATE Autotest SET Value = ? WHERE test = ? and Param = ?', {},
 				$new_index, 'test8', 'settings_collect_num');
 				
@@ -1032,7 +1039,7 @@ sub settings_full_collect
 	my $res_str = '';
 	my $index_param = 0;
 	
-	for my $coll_pair (@$coll_hash) {
+	for my $coll_pair (sort {$a->{Param} cmp $b->{Param}} @$coll_hash) {
 		$index_param++;
 		$coll_pair->{Param} =~ s/^[^:]+?://;
 		
@@ -1172,13 +1179,17 @@ sub langreq
 	find( \&search_all_folder, $path );
 }
 
-sub search_all_folder {
+sub search_all_folder
+# //////////////////////////////////////////////////
+{
 	chomp $_;
 	return if $_ eq '.' or $_ eq '..';
 	read_files($_) if (-f);
 	}
 
-sub read_files {
+sub read_files
+# //////////////////////////////////////////////////
+{
 	my $filename = shift;
 	
 	if ((($filename =~ /\.pm$/i) or ($filename =~ /\.tt2$/i))
@@ -1273,7 +1284,9 @@ sub sql_test {
 	if ($sql_r) { print $sql_r; } else { print "ok|$sql_num"; };
 	}
 
-sub get_db_hash {
+sub get_db_hash
+# //////////////////////////////////////////////////
+{
 	my $vars = shift;
 	my $hash = {};
 	
@@ -1289,13 +1302,17 @@ sub get_db_hash {
 	return $hash;
 	}
 	
-sub search_all_query {
+sub search_all_query
+# //////////////////////////////////////////////////
+{
 	chomp $_;
 	return if $_ eq '.' or $_ eq '..';
 	query_search_files($_) if (-f);
 	}
 
-sub query_search_files {
+sub query_search_files
+# //////////////////////////////////////////////////
+{
 	my ($filename) = @_;
 	my @sql = ();
 	my $conti = 0;
@@ -1484,13 +1501,17 @@ sub test_syntax
 	print $syntax_err if $syntax_err;
 }
 
-sub syntax_all_folder {
+sub syntax_all_folder
+# //////////////////////////////////////////////////
+{
 	chomp $_;
 	return if $_ eq '.' or $_ eq '..';
 	syntax_files($_) if (-f);
 	}
 
-sub syntax_files {
+sub syntax_files
+# //////////////////////////////////////////////////
+{
 	my $filename = shift;
 	
 	if (($filename =~ /\.pm$/i) or ($filename =~ /\.pl2$/i)) {
@@ -1540,15 +1561,14 @@ sub test_update
 			my ($pr_year, $pr_month, $pr_day) = split /-/,$l_rate->{R_date};
 			($pr_year, $pr_month, $pr_day) = Add_Delta_Days($pr_year, $pr_month, $pr_day, $num_d);
 			
-			warn "$pr_year >= $year) and ($pr_month >= $month) and ($pr_day >= $day";
 			$err .= 'cтарый прайслист ('.get_center_name($vars, $l_rate->{R_id}).' - '.$l_rate->{R_date}.')\\n'
-				if ($pr_year <= $year) and ($pr_month <= $month) and ($pr_day < $day); }
+				if ($pr_year < $year) or ($pr_month < $month) or ($pr_day < $day); }
 		}
 	
 	if ($test_difeuro) {
 		for my $l_rate(@$last_rate) {	
 			$err .= get_center_name($vars, $l_rate->{R_id}).': изменение курса превышает допустмые '. 
-					$def_percent.'% для актуального прайслиста\\n'
+					$def_percent.'%\\n'
 				if (($l_rate->{ConcilR}/100*$def_percent) < (abs($consil_current-$l_rate->{ConcilR}))); }
 		}
 	
@@ -1559,6 +1579,7 @@ sub test_update
 }
 
 sub fast_calc_consil
+# //////////////////////////////////////////////////
 {
 	my $c_date = shift;
 
@@ -1852,7 +1873,7 @@ sub modultest
 		for(keys %{$test->{test}}) {
 			my $tmp_r = &{$test->{func}}(@{$test->{test}->{$_}->[0]});
 			$err_tmp = &{$test->{tester}}($tmp_r, $test->{test}->{$_}->[1],$test->{comment}) if !$err_tmp;
-			#warn Dumper($tmp_r,$test->{test}->{$_}->[1]);
+				warn Dumper($tmp_r,$test->{test}->{$_}->[1]);
 			$test_num++;
 			} 
 		$err .= "$err_tmp\\n" if $err_tmp;
@@ -1864,7 +1885,9 @@ sub modultest
 	print $err if $err;
 	}
 
-sub test_hash {
+sub test_hash
+# //////////////////////////////////////////////////
+{
 	my $test_hash = shift;
 	my $pattern_ar = shift;
 	my $comment = shift;
@@ -1879,19 +1902,25 @@ sub test_hash {
 	else {	return '' };
 	}
 
-sub test_line {
+sub test_line
+# //////////////////////////////////////////////////
+{
 	if (shift ne shift) { return shift; }
 	else { return '' };
 	}
 
-sub test_line_substr {
+sub test_line_substr
+# //////////////////////////////////////////////////
+{
 	my $str = shift;
 	my $sub_str = shift;
 	if (index($str, $sub_str) < 0) { return shift; }
 	else { return '' };
 	}
 	
-sub settings_default {
+sub settings_default
+# //////////////////////////////////////////////////
+{
 	my $vars = shift;
 
 	my $tt_adr_default = [
@@ -2028,7 +2057,7 @@ sub settings_default {
 				'отчет по деятельности сотрудников',
 				'отчет об отправке SMS',
 				'сообщения об ошибках с сайта',
-		];
+		]; #report_name
 	
 	my $test_addapp = {
 		
@@ -2046,6 +2075,7 @@ sub settings_default {
 			'whompass' => '0808AUTOTEST',		'whompassd' => '11.11.2010',
 			'whompasso' => 'ОВД',			'shipnum' => '289',
 			'phone' => '32141234',			'apptime' => '1366',
+			'appdate' => 'APP_DATE',
 			},
 		
 		2 => { 	'sessionDuration' => '129048',		'cid' => '39',
@@ -2062,6 +2092,7 @@ sub settings_default {
 			'whompass' => '0808AUTOTEST',		'whompassd' => '11.11.2010',
 			'whompasso' => 'ОВД',			'shipnum' => '289',
 			'phone' => '32141234',			'apptime' => '880',
+			'appdate' => 'APP_DATE',
 			},
 
 		3 => { 	'sessionDuration' => '129048',		'cid' => '29',
@@ -2078,6 +2109,7 @@ sub settings_default {
 			'whompass' => '0808AUTOTEST',		'whompassd' => '11.11.2010',
 			'whompasso' => 'ОВД',			'shipnum' => '289',
 			'phone' => '32141234',			'apptime' => '1023',
+			'appdate' => 'APP_DATE',
 			},
 			
 		4 => { 	'sessionDuration' => '129048',		'cid' => '61',
@@ -2094,6 +2126,7 @@ sub settings_default {
 			'whompass' => '0808AUTOTEST',		'whompassd' => '11.11.2010',
 			'whompasso' => 'ОВД',			'shipnum' => '289',
 			'phone' => '32141234',			'apptime' => '1200',
+			'appdate' => 'APP_DATE',
 			},
 		
 		5 => { 	'sessionDuration' => '129048',		'cid' => '53',
@@ -2110,9 +2143,10 @@ sub settings_default {
 			'whompass' => '0808AUTOTEST',		'whompassd' => '11.11.2010',
 			'whompasso' => 'ОВД',			'shipnum' => '289',
 			'phone' => '32141234',			'apptime' => '1291',
+			'appdate' => 'APP_DATE',
 			},
 		
-		};
+		}; #test_addapp
 	
 	my $test_short_form_step1 = {
 		
@@ -2129,6 +2163,8 @@ sub settings_default {
 			'dovpasswhom' => 'ОВД',			'phone' => '3213232',
 			'email' => 'email@email.com',		'address' => 'адрес',
 			'shipnum' => '289',			'shaddress' => 'shaddress',
+			'fdate' => 'START_DATE',		'edate' => 'END_DATE',
+			'appdate' => 'APP_DATE',
 			},
 			
 		2 => { 	'center' => '39',			'vtype' => '16',
@@ -2144,6 +2180,8 @@ sub settings_default {
 			'dovpasswhom' => 'ОВД',			'phone' => '3213232',
 			'email' => 'email@email.com',		'address' => 'адрес',
 			'shipnum' => '289',			'shaddress' => 'shaddress',
+			'fdate' => 'START_DATE',		'edate' => 'END_DATE',
+			'appdate' => 'APP_DATE',
 			},
 			
 		3 => { 	'center' => '29',			'vtype' => '13',
@@ -2159,6 +2197,8 @@ sub settings_default {
 			'dovpasswhom' => 'ОВД',			'phone' => '3213232',
 			'email' => 'email@email.com',		'address' => 'адрес',
 			'shipnum' => '289',			'shaddress' => 'shaddress',
+			'fdate' => 'START_DATE',		'edate' => 'END_DATE',
+			'appdate' => 'APP_DATE',
 			},
 		
 		4 => { 	'center' => '61',			'vtype' => '10',
@@ -2174,6 +2214,8 @@ sub settings_default {
 			'dovpasswhom' => 'ОВД',			'phone' => '3213232',
 			'email' => 'email@email.com',		'address' => 'адрес',
 			'shipnum' => '289',			'shaddress' => 'shaddress',
+			'fdate' => 'START_DATE',		'edate' => 'END_DATE',
+			'appdate' => 'APP_DATE',
 			},
 		
 		5 => { 	'center' => '53',			'vtype' => '7',
@@ -2189,8 +2231,10 @@ sub settings_default {
 			'dovpasswhom' => 'ОВД',			'phone' => '3213232',
 			'email' => 'email@email.com',		'address' => 'адрес',
 			'shipnum' => '289',			'shaddress' => 'shaddress',
+			'fdate' => 'START_DATE',		'edate' => 'END_DATE',
+			'appdate' => 'APP_DATE',
 			},
-		};
+		}; #test_short_form_step1
 	
 	my $test_short_form_step2 = {
 		
@@ -2212,6 +2256,8 @@ sub settings_default {
 			'dovpassdate' => '11.11.2010',		'dovpasswhom' => 'ОВД',
 			'phone' => '3213232',			'email' => 'email@email.com',
 			'address' => 'адрес',			'shipnum' => '289',
+			'fdate' => 'START_DATE',		'edate' => 'END_DATE',
+			'appdate' => 'APP_DATE',
 			},
 		
 		2 => { 	'whom1' => '1',				'center' => '39',
@@ -2232,6 +2278,8 @@ sub settings_default {
 			'dovpassdate' => '11.11.2010',		'dovpasswhom' => 'ОВД',
 			'phone' => '3213232',			'email' => 'email@email.com',
 			'address' => 'адрес',			'shipnum' => '289',
+			'fdate' => 'START_DATE',		'edate' => 'END_DATE',
+			'appdate' => 'APP_DATE',
 			},
 		
 		3 => { 	'whom1' => '1',				'center' => '29',
@@ -2252,6 +2300,8 @@ sub settings_default {
 			'dovpassdate' => '11.11.2010',		'dovpasswhom' => 'ОВД',
 			'phone' => '3213232',			'email' => 'email@email.com',
 			'address' => 'адрес',			'shipnum' => '289',
+			'fdate' => 'START_DATE',		'edate' => 'END_DATE',
+			'appdate' => 'APP_DATE',
 			},
 		
 		4 => { 	'whom1' => '1',				'center' => '61',
@@ -2272,6 +2322,8 @@ sub settings_default {
 			'dovpassdate' => '11.11.2010',		'dovpasswhom' => 'ОВД',
 			'phone' => '3213232',			'email' => 'email@email.com',
 			'address' => 'адрес',			'shipnum' => '289',
+			'fdate' => 'START_DATE',		'edate' => 'END_DATE',
+			'appdate' => 'APP_DATE',
 			},
 		
 		5 => { 	'whom1' => '1',				'center' => '53',
@@ -2292,8 +2344,10 @@ sub settings_default {
 			'dovpassdate' => '11.11.2010',		'dovpasswhom' => 'ОВД',
 			'phone' => '3213232',			'email' => 'email@email.com',
 			'address' => 'адрес',			'shipnum' => '289',
+			'fdate' => 'START_DATE',		'edate' => 'END_DATE',
+			'appdate' => 'APP_DATE',
 			},
-		};
+		}; #test_short_form_step2
 	
 	my $test_contract = {
 		
@@ -2446,12 +2500,12 @@ sub settings_default {
 			'mpass' => '101010AUTOTEST',		'mpassdate' => '11.11.2010',
 			'mpasswhom' => 'ОВД',			'phone' => '89117889373',
 			},
-		};
+		}; #test_contract
 	
 	my $db_connect = VCS::Config->getConfig();
 
 	my $r = $vars->db->query('CREATE TABLE Autotest (ID INT NOT NULL AUTO_INCREMENT, '.
-			'Test VARCHAR(6), Param VARCHAR(256), Value VARCHAR(256), PRIMARY KEY (ID))', {});
+			'Test VARCHAR(6), Param VARCHAR(50), Value VARCHAR(256), PRIMARY KEY (ID))', {});
 	
 	# TT	
 	for (@$tt_adr_default) {
