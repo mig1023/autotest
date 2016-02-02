@@ -97,15 +97,35 @@ sub autotest
 	my $did;
 	my $first_time_alert = '';
 	
-	my $settings_exist = $vars->db->sel1("SELECT CREATE_TIME FROM information_schema.tables ".
-			"WHERE table_name = ? LIMIT 1", 'Autotest');
-						
-	if (!$settings_exist) {
+	my $db_connect = VCS::Config->getConfig();
+	my $db_name = $db_connect->{db}->{dbname};
 	
-		my $db_name = settings_default($vars);
+	my $settings_exist = $vars->db->sel1("SELECT CREATE_TIME FROM information_schema.tables ".
+			"WHERE table_schema = ? and table_name = ? LIMIT 1", $db_name, 'Autotest');
+	
+	if (!$settings_exist) {
+		settings_default($vars);
 		$first_time_alert = "alert('Модуль самотестирования запущен впервые, подключена новая БД или ".
 				"данные настроек были утеряны.\\nВ текущей БД " . $db_name . " создана таблица ".
-				"Autotest с настройками по умолчанию.')";
+				"Autotest с настройками по умолчанию.');";
+		};
+warn "*******************$settings_exist";		
+	my $id_from_docpack = $vars->db->sel1("select ID from DocPack where PassNum = '101010AUTOTEST'");
+	my $id_from_docpack_list = $vars->db->sel1("select ID from DocPackList where PassNum = '0909AUTOTEST'");
+	my $id_from_app = $vars->db->sel1("select ID from Appointments where PassNum = '0808AUTOTEST'");
+	my $id_from_appdata = $vars->db->sel1("select ID from AppData where PassNum = '0909AUTOTEST'");
+	
+	if ($id_from_app or $id_from_appdata or $id_from_docpack or $id_from_docpack_list) {
+		$first_time_alert .= 
+			"alert('В текущей БД обнаружены данные со уникальными номерами паспортов: \\n\\n".
+			($id_from_docpack ? "101010AUTOTEST в таблице DocPack \\n" : '').
+			($id_from_docpack_list ? "0909AUTOTEST в таблице DocPackList \\n" : '').
+			($id_from_app  ? "0808AUTOTEST в таблице Appointments \\n" : '').
+			($id_from_appdata ? "0909AUTOTEST в таблице AppData \\n" : '').
+			"\\nТакие номера используются для тестирования данным модулем. Их наличие в БД может ".
+			"быть результатом прекращения работы модуля во время тестирования. ".
+			"Они будут удалены в процессе полной проверки, но это может исказить результаты ".
+			"первой предстоящей проверки. На последующих проверках это не скажется.');";
 		};
 	
 	# TT
@@ -2652,7 +2672,7 @@ sub settings_default
 	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
 			'test8', 'settings_autodate', 1);
 			
-	return $db_connect->{db}->{dbname};	
+	return 1;	
 	}
 
 1;
