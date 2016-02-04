@@ -109,7 +109,7 @@ sub autotest
 				"данные настроек были утеряны.\\nВ текущей БД " . $db_name . " создана таблица ".
 				"Autotest с настройками по умолчанию.');";
 		};
-warn "*******************$settings_exist";		
+		
 	my $id_from_docpack = $vars->db->sel1("select ID from DocPack where PassNum = '101010AUTOTEST'");
 	my $id_from_docpack_list = $vars->db->sel1("select ID from DocPackList where PassNum = '0909AUTOTEST'");
 	my $id_from_app = $vars->db->sel1("select ID from Appointments where PassNum = '0808AUTOTEST'");

@@ -130,7 +130,7 @@ function TestTimeSlots()
 	if (test_error != 0) {
 		if (!err_found)	{ 
 			err_found = '&nbsp;<span class="ramka_green">&nbsp;без ошибок&nbsp;</span>'; }
-		else { 	err_found = '<span class="ramka_red">&nbsp;<b>ошибок: ' + err_found+ '</b>&nbsp;</span>&nbsp;'; }; 
+		else { 	err_found = '<span class="ramka_red">&nbsp;ошибок: ' + err_found+ '&nbsp;</span>&nbsp;'; }; 
 		};
 	
 	if (void_found && (test_null != 0))
