@@ -16,6 +16,8 @@
 
 <tr>
  <td width="920px" valign="top" height="300px">
+ <input type="button" value="<< вернуться" onclick="location.href='/autotest/'">
+ <br><br><br>
  [% settings_place %]
  </td>
 </tr>

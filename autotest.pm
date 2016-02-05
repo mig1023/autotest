@@ -183,12 +183,7 @@ sub autotest
 	($did, my $settings_fixdate) = get_settings($vars, 'test3', 'settings_fixdate');
 	
 	if ($settings_fixdate) {
-		my @settings_fixdate = split /,/, $settings_fixdate;
-		$settings_fixdate = join "','", @settings_fixdate;
-		$settings_fixdate = "'".$settings_fixdate."'";
-		$settings_fixdate =~ s/\s+//g;
-		$settings_fixdate_num = scalar(@settings_fixdate);
-		}
+		($settings_fixdate, $settings_fixdate_num) = fix_dates_str($settings_fixdate); };
 	
 	for (1..$settings_collect3_num) {
 		$test3_collection .= "'";
@@ -240,21 +235,9 @@ sub autotest
 	($did, my $settings_test2_fixdate_e) = get_settings($vars, 'test2', 'settings_fixdate_e');
 
 	if ($settings_test2_fixdate_s) {
-		my @settings_fixdate_s = split /,/, $settings_test2_fixdate_s;
-		my @settings_fixdate_e = split /,/, $settings_test2_fixdate_e;
-		my @settings_appdate = split /,/, $settings_test2_appdate;
-		$settings_test2_fixdate_s = join "','", @settings_fixdate_s;
-		$settings_test2_fixdate_e = join "','", @settings_fixdate_e;
-		$settings_test2_appdate = join "','", @settings_appdate;
-		$settings_test2_fixdate_s = "'".$settings_test2_fixdate_s."'";
-		$settings_test2_fixdate_e = "'".$settings_test2_fixdate_e."'";
-		$settings_test2_appdate = "'".$settings_test2_appdate."'";
-		$settings_test2_fixdate_s =~ s/\s+//g;
-		$settings_test2_fixdate_e =~ s/\s+//g;
-		$settings_test2_appdate =~ s/\s+//g;
-		$settings_test2_fixdate_num = scalar(@settings_fixdate_s);
-		$settings_test2_appdate_num = scalar(@settings_appdate);
-		}
+		($settings_test2_fixdate_s, $settings_test2_fixdate_num) = fix_dates_str($settings_test2_fixdate_s);
+		($settings_test2_fixdate_e, $settings_test2_fixdate_num) = fix_dates_str($settings_test2_fixdate_e);
+		($settings_test2_appdate, $settings_test2_appdate_num) = fix_dates_str($settings_test2_appdate); };
 
 	# TC
 	
@@ -265,18 +248,10 @@ sub autotest
 	($did, my $settings_test8_fixdate_s) = get_settings($vars, 'test8', 'settings_fixdate_s');
 	($did, my $settings_test8_fixdate_e) = get_settings($vars, 'test8', 'settings_fixdate_e');
 	($did, my $settings_test8_autodate) = get_settings($vars, 'test8', 'settings_autodate');
-	
-	if ($settings_fixdate) {
-		my @settings_fixdate_s = split /,/, $settings_test8_fixdate_s;
-		my @settings_fixdate_e = split /,/, $settings_test8_fixdate_e;
-		$settings_test8_fixdate_s = join "','", @settings_fixdate_s;
-		$settings_test8_fixdate_e = join "','", @settings_fixdate_e;
-		$settings_test8_fixdate_s = "'".$settings_test8_fixdate_s."'";
-		$settings_test8_fixdate_e = "'".$settings_test8_fixdate_e."'";
-		$settings_test8_fixdate_s =~ s/\s+//g;
-		$settings_test8_fixdate_e =~ s/\s+//g;
-		$settings_test8_fixdate_num = scalar(@settings_fixdate_s);
-		}
+
+	if ($settings_test8_fixdate_s) {
+		($settings_test8_fixdate_s, $settings_test8_fixdate_num) = fix_dates_str($settings_test8_fixdate_s);
+		($settings_test8_fixdate_e, $settings_test8_fixdate_num) = fix_dates_str($settings_test8_fixdate_e); }
 	
 	for (1..$settings_collect8_num) {
 		$test8_collection .= "'";
@@ -552,19 +527,9 @@ sub settings
 			$settings .= 	'APP_DATE - автоматически заменяется на дату подачи заявки<br><br>';
 			
 			$settings .= settings_full_collect($vars, 'test3', $collect);
-			
-			$settings .= 	'<input type="hidden" name="collect" value="'.$collect.'">'.
-					'<input type="hidden" name="ret" value="AA">'.
-					'<input type="submit" id="collect_submit" '.
-					'value="сохранить изменения"></form><br>'.
-					'<b>добавить новое поле в набор:</b><br><br>'.
-					'<form action="/autotest/collect_add.htm">'.
-					'<input type="edit" name="param"> = <input type="edit" name="value"><br><br>'.
-					'<input type="hidden" name="test" value="test3">'.
-					'<input type="hidden" name="collect" value="'.$collect.'">'.
-					'<input type="hidden" name="ret" value="AA">'.
-					'<input type="submit" id="submit" value="добавить"></form><br>';
+			$settings .= settings_form_add_into_collect ($collect, 'test3', 'AA')
 			}
+			
 		elsif ($collect and $del) {
 			my $r = $vars->db->query("DELETE FROM Autotest WHERE Test = ? AND Param LIKE ?", {},
 				'test3', $collect.':%');
@@ -669,20 +634,8 @@ sub settings
 					'END_DATE - на дату окончания поездки<br><br>';
 			
 			$settings .= settings_full_collect($vars, 'test2A', $collect);
-			
-			$settings .= 	'<input type="hidden" name="collect" value="'.$collect.'">'.
-					'<input type="hidden" name="ret" value="SF">'.
-					'<input type="submit" id="collect_submit" '.
-					'value="сохранить изменения"></form><br>'.
-					'<b>добавить новое поле в набор:</b><br><br>'.
-					'<form action="/autotest/collect_add.htm">'.
-					'<input type="edit" name="param"> = <input type="edit" name="value"><br><br>'.
-					'<input type="hidden" name="test" value="test2A">'.
-					'<input type="hidden" name="collect" value="'.$collect.'">'.
-					'<input type="hidden" name="ret" value="SF">'.
-					'<input type="submit" id="submit" value="добавить"></form><br>';
-			
-			
+			$settings .= settings_form_add_into_collect ($collect, 'test2A', 'SF');
+						
 			$settings .= 	'<form action="/autotest/collect_chng.htm">'.
 					'<input type="hidden" name="collect_new_name" value="'.$settings_collect_name.
 					'" size="43"><br><br><input type="hidden" name="collect_name_id" '.
@@ -693,19 +646,9 @@ sub settings
 					'END_DATE - на дату окончания поездки<br><br>';
 					
 			$settings .= settings_full_collect($vars, 'test2B', $collect);
-			
-			$settings .= 	'<input type="hidden" name="collect" value="'.$collect.'">'.
-					'<input type="hidden" name="ret" value="SF">'.
-					'<input type="submit" id="collect_submit" '.
-					'value="сохранить изменения"></form><br>'.
-					'<b>добавить новое поле в набор:</b><br><br>'.
-					'<form action="/autotest/collect_add.htm">'.
-					'<input type="edit" name="param"> = <input type="edit" name="value"><br><br>'.
-					'<input type="hidden" name="test" value="test2B">'.
-					'<input type="hidden" name="collect" value="'.$collect.'">'.
-					'<input type="hidden" name="ret" value="SF">'.
-					'<input type="submit" id="submit" value="добавить"></form><br>';
+			$settings .= settings_form_add_into_collect ($collect, 'test2B', 'SF');
 			}
+
 		elsif ($collect and $del) {
 			my $r = $vars->db->query("DELETE FROM Autotest WHERE Test = ? AND Param LIKE ?", {},
 				'test2', $collect.':%');
@@ -777,7 +720,7 @@ sub settings
 			$settings .= settings_form_str_chng('сохранить', $did, $value, 'TC' );
 			
 			$settings .= 'даты окончания поездки<br>';
-			($did, $value) = get_settings($vars, 'test', 'settings_fixdate_e');
+			($did, $value) = get_settings($vars, 'test8', 'settings_fixdate_e');
 			$value = '' if !$value;
 			$settings .= settings_form_str_chng('сохранить', $did, $value, 'TC' );
 		
@@ -809,19 +752,9 @@ sub settings
 					'END_DATE - на дату окончания поездки<br><br>';
 			
 			$settings .= settings_full_collect($vars, 'test8', $collect);
-			
-			$settings .= 	'<input type="hidden" name="collect" value="'.$collect.'">'.
-					'<input type="hidden" name="ret" value="TC">'.
-					'<input type="submit" id="collect_submit" '.
-					'value="сохранить изменения"></form><br>'.
-					'<b>добавить новое поле в набор:</b><br><br>'.
-					'<form action="/autotest/collect_add.htm">'.
-					'<input type="edit" name="param"> = <input type="edit" name="value"><br><br>'.
-					'<input type="hidden" name="test" value="test8">'.
-					'<input type="hidden" name="collect" value="'.$collect.'">'.
-					'<input type="hidden" name="ret" value="TC">'.
-					'<input type="submit" id="submit" value="добавить"></form><br>';
+			$settings .= settings_form_add_into_collect ($collect, 'test8', 'TC');
 			}
+
 		elsif ($collect and $del) {
 			my $r = $vars->db->query("DELETE FROM Autotest WHERE Test = ? AND Param LIKE ?", {},
 				'test8', $collect.':%');
@@ -1044,6 +977,26 @@ sub settings_form_collect
 			'&collect='.$collect_num.'\'">'.
 			'&nbsp;'.$collect_name.'<br><br>'."\n";
 	return $res_str;
+}
+
+sub settings_form_add_into_collect
+# //////////////////////////////////////////////////
+{
+	my $collect = shift;
+	my $test_num = shift;
+	my $ret = shift;
+
+		'<input type="hidden" name="collect" value="'.$collect.'">'.
+		'<input type="hidden" name="ret" value="'.$ret.'">'.
+		'<input type="submit" id="collect_submit" '.
+		'value="сохранить изменения"></form><br>'.
+		'<b>добавить новое поле в набор:</b><br><br>'.
+		'<form action="/autotest/collect_add.htm">'.
+		'<input type="edit" name="param"> = <input type="edit" name="value"><br><br>'.
+		'<input type="hidden" name="test" value="'.$test_num.'">'.
+		'<input type="hidden" name="collect" value="'.$collect.'">'.
+		'<input type="hidden" name="ret" value="'.$ret.'">'.
+		'<input type="submit" id="submit" value="добавить"></form><br>';
 }
 
 sub settings_full_collect
@@ -1937,6 +1890,23 @@ sub test_line_substr
 	if (index($str, $sub_str) < 0) { return shift; }
 	else { return '' };
 	}
+
+sub fix_dates_str
+# //////////////////////////////////////////////////
+{
+	my @fixdate = split /,/, shift;
+warn Dumper(@fixdate);
+	my $fixdate = join "','", @fixdate;
+warn $fixdate;
+	$fixdate = "'".$fixdate."'";
+warn $fixdate;
+	$fixdate =~ s/\s+//g;
+warn $fixdate;
+	my $fixdate_num = scalar(@fixdate);
+warn $fixdate_num;
+
+	return $fixdate, $fixdate_num;
+}
 	
 sub settings_default
 # //////////////////////////////////////////////////

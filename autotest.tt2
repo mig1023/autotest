@@ -14,54 +14,54 @@
 
 <tr>
  <td width="920px" valign="top" height="300px">
- <input type="button" id="test_all" value="<<< [% langreq('Тестировать всё') %] >>>"
+ <input type="button" id="test_all" value="<<< [% langreq('тестировать всё') %] >>>"
  onclick="TestModules(); TestSQL(); TestSyntax(); TestTT(); TestTimeSlots(); TestShortForm(); TestAppAdd(); TestContract(); CheckReports(); TestTranslait(); TestUpdates()"><br><br>
  
  [% langreq('Раздел 1') %]<br><br>
- <input type="button" id="test5settings" value="Настройки" onclick="location.href='/autotest/settings.htm?edit=MT'">&nbsp;
- <input type="button" id="test5" value="[% langreq('Модульные тесты') %]" onclick="TestModules()">
+ <input type="button" id="test5settings" value="настройки" onclick="location.href='/autotest/settings.htm?edit=MT'">&nbsp;
+ <input type="button" id="test5" value="[% langreq('модульные тесты') %]" onclick="TestModules()">
  &nbsp;&nbsp;<div id="status_test5" style="display: inline"></div><br><br>
  
- <input type="button" id="test7settings" value="Настройки" onclick="location.href='/autotest/settings.htm?edit=SQL'"> &nbsp;
- <input type="button" id="test7" value="[% langreq('Проверка SQL-запросов') %]" onclick="TestSQL()">
+ <input type="button" id="test7settings" value="настройки" onclick="location.href='/autotest/settings.htm?edit=SQL'"> &nbsp;
+ <input type="button" id="test7" value="[% langreq('проверка SQL-запросов') %]" onclick="TestSQL()">
  &nbsp;&nbsp;<div id="status_test7" style="display: inline"></div><br><br>
  
- <input type="button" id="test10settings" value="Настройки" onclick="location.href='/autotest/settings.htm?edit=SY'">&nbsp;
- <input type="button" id="test10" value="[% langreq('Проверка модулей') %]" onclick="TestSyntax()">
+ <input type="button" id="test10settings" value="настройки" onclick="location.href='/autotest/settings.htm?edit=SY'">&nbsp;
+ <input type="button" id="test10" value="[% langreq('проверка модулей') %]" onclick="TestSyntax()">
  &nbsp;&nbsp;<div id="status_test10" style="display: inline"></div><br><br>
  
- <input type="button" id="test9settings" value="Настройки" onclick="location.href='/autotest/settings.htm?edit=TT'">&nbsp;
- <input type="button" id="test9" value="[% langreq('Проверка страниц') %]" onclick="TestTT()">
+ <input type="button" id="test9settings" value="настройки" onclick="location.href='/autotest/settings.htm?edit=TT'">&nbsp;
+ <input type="button" id="test9" value="[% langreq('проверка страниц') %]" onclick="TestTT()">
  &nbsp;&nbsp;<div id="status_test9" style="display: inline"></div><br><br>
   
  [% langreq('Раздел 2') %]<br><br>
- <input type="button" id="test1settings" value="Настройки" onclick="location.href='/autotest/settings.htm?edit=TS'">&nbsp;
- <input type="button" id="test1" value="[% langreq('Доступность интервалов') %]" onclick="TestTimeSlots()">
+ <input type="button" id="test1settings" value="настройки" onclick="location.href='/autotest/settings.htm?edit=TS'">&nbsp;
+ <input type="button" id="test1" value="[% langreq('доступность интервалов') %]" onclick="TestTimeSlots()">
  &nbsp;&nbsp;<div id="status_test1" style="display: inline"></div><br><br>
  
- <input type="button" id="test2settings" value="Настройки" onclick="location.href='/autotest/settings.htm?edit=SF'">&nbsp;
- <input type="button" id="test2" value="[% langreq('Доступность записи | short form') %]" onclick="TestShortForm()">
+ <input type="button" id="test2settings" value="настройки" onclick="location.href='/autotest/settings.htm?edit=SF'">&nbsp;
+ <input type="button" id="test2" value="[% langreq('доступность записи | short form') %]" onclick="TestShortForm()">
  &nbsp;&nbsp;<div id="status_test2" style="display: inline"></div><br><br>
  
- <input type="button" id="test3settings" value="Настройки" onclick="location.href='/autotest/settings.htm?edit=AA'">&nbsp;
- <input type="button" id="test3" value="[% langreq('Доступность записи | add app') %]" onclick="TestAppAdd()">
+ <input type="button" id="test3settings" value="настройки" onclick="location.href='/autotest/settings.htm?edit=AA'">&nbsp;
+ <input type="button" id="test3" value="[% langreq('доступность записи | add app') %]" onclick="TestAppAdd()">
  &nbsp;&nbsp;<div id="status_test3" style="display: inline"></div><br><br>
  
- <input type="button" id="test8settings" value="Настройки" onclick="location.href='/autotest/settings.htm?edit=TC'">&nbsp;
- <input type="button" id="test8" value="[% langreq('Доступность создания договора') %]" onclick="TestContract()">
+ <input type="button" id="test8settings" value="настройки" onclick="location.href='/autotest/settings.htm?edit=TC'">&nbsp;
+ <input type="button" id="test8" value="[% langreq('доступность создания договора') %]" onclick="TestContract()">
  &nbsp;&nbsp;<div id="status_test8" style="display: inline"></div><br><br>
  
- <input type="button" id="test4settings" value="Настройки" onclick="location.href='/autotest/settings.htm?edit=RP'">&nbsp;
- <input type="button" id="test4" value="[% langreq('Доступность отчётов') %]" onclick="CheckReports()">
+ <input type="button" id="test4settings" value="настройки" onclick="location.href='/autotest/settings.htm?edit=RP'">&nbsp;
+ <input type="button" id="test4" value="[% langreq('доступность отчётов') %]" onclick="CheckReports()">
  &nbsp;&nbsp;<div id="status_test4" style="display: inline"></div><br><br>
  
  [% langreq('Раздел 3') %]<br><br>
- <input type="button" id="test6settings" value="Настройки" onclick="location.href='/autotest/settings.htm?edit=TR'">&nbsp;
- <input type="button" id="test6" value="[% langreq('Проверить перевод') %]" onclick="TestTranslait()">
+ <input type="button" id="test6settings" value="настройки" onclick="location.href='/autotest/settings.htm?edit=TR'">&nbsp;
+ <input type="button" id="test6" value="[% langreq('проверить перевод') %]" onclick="TestTranslait()">
  &nbsp;&nbsp;<div id="status_test6" style="display: inline"></div><br><br>
  
- <input type="button" id="test11settings" value="Настройки" onclick="location.href='/autotest/settings.htm?edit=UP'">&nbsp;
- <input type="button" id="test11" value="[% langreq('Проверить состояния') %]" onclick="TestUpdates()">
+ <input type="button" id="test11settings" value="настройки" onclick="location.href='/autotest/settings.htm?edit=UP'">&nbsp;
+ <input type="button" id="test11" value="[% langreq('проверить состояния') %]" onclick="TestUpdates()">
  &nbsp;&nbsp;<div id="status_test11" style="display: inline"></div><br><br>
  </td>
 </tr>
