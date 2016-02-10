@@ -67,6 +67,11 @@
 </tr>
 
 <script>
+ 
+if (navigator.userAgent.search(/Firefox/) <= 0)
+	alert(  "В настоящий момент модуль работоспособен только в Firefox'е, остальные сбоят "+
+		"ввиду неправильной работы с асинхронностью аякса.");
+
 [% first_time_alert %]
 
 function TestTimeSlots()
@@ -270,15 +275,22 @@ function getNormalDay(a)
 
 	var date = new Date();
 	var day_tmp = 0;
-	
+
 	do
 	{	
 		day_tmp++;
-		date.setDate(date.getDate() + 1);
-		if (date.getDay() == 6) { date.setDate(date.getDate() + 2); };
-		if (date.getDay() == 0) { date.setDate(date.getDate() + 1); };
+		if (a >= 0) {
+			date.setDate(date.getDate() + 1); 
+			if (date.getDay() == 6) { date.setDate(date.getDate() + 2); };
+			if (date.getDay() == 0) { date.setDate(date.getDate() + 1); };
+			}
+		else {	date.setDate(date.getDate() - 1); 
+			if (date.getDay() == 6) { date.setDate(date.getDate() - 1); };
+			if (date.getDay() == 0) { date.setDate(date.getDate() - 2); };
+			}
+		
 	}
-	while ((date.getDay() == 6) || (date.getDay() == 0) || (day_tmp < a)) 
+	while ((date.getDay() == 6) || (date.getDay() == 0) || (day_tmp < Math.abs(a))) 
 
 	var date_temp1 =  date.getDate();
 	if (date_temp1 < 10) { date_temp1 = '0'+date_temp1 };
@@ -385,8 +397,13 @@ function TestContract()
 	var settings_test8_fix_num = [% settings_test8_fixdate_num %];
 	var settings_test8_autodate = [% settings_test8_autodate %];
 	
+	var settings_concildate = [ [% settings_test8_concildate %] ];
+	var settings_concildate_num = [% settings_test8_concildate_num %];
+	var fixconcil_index = 0;
+	
 	var far_far_away1;
 	var far_far_away2;
+	var concil_date;
 	
 	var appdate = getNormalDay(1);
 	
@@ -427,10 +444,12 @@ function TestContract()
 	
 		if (settings_test8_autodate) {
 			far_far_away1 = getNormalDay(150);
-			far_far_away2 = getNormalDay(200); }
+			far_far_away2 = getNormalDay(200); 
+			concil_date = getNormalDay(-1); }
 		else {	
 			far_far_away1 = settings_fixdate_s[fixdate_index];
-			far_far_away2 = settings_fixdate_e[fixdate_index]; };	
+			far_far_away2 = settings_fixdate_e[fixdate_index];
+			concil_date = settings_concildate[fixconcil_index]; };	
 		
 	
 		var test_str = test_collection[test-1];
@@ -438,6 +457,7 @@ function TestContract()
 		test_str = test_str.replace(/APPLID/g, applid);
 		test_str = test_str.replace(/START_DATE/g, far_far_away1);
 		test_str = test_str.replace(/END_DATE/g, far_far_away2);
+		test_str = test_str.replace(/CONCIL_DATE/g, concil_date);
 		
 		test_str ='?create=Создать&appid='+aid+test_str;
 		
@@ -454,6 +474,8 @@ function TestContract()
 		err_found += TestAndCleanDoc(test, appdate);
 		fixdate_index++;
 		if (fixdate_index >= settings_test8_fix_num) { fixdate_index = 0; };
+		fixconcil_index++;
+		if (fixconcil_index >= settings_concildate_num) { fixconcil_index = 0; };
 		} 
 		
 	err_found += TestAndClean(test, appdate);	

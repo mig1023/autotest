@@ -117,7 +117,7 @@ sub autotest
 	
 	if ($id_from_app or $id_from_appdata or $id_from_docpack or $id_from_docpack_list) {
 		$first_time_alert .= 
-			"alert('В текущей БД обнаружены данные со уникальными номерами паспортов: \\n\\n".
+			"alert('В текущей БД обнаружены данные с уникальными номерами паспортов: \\n\\n".
 			($id_from_docpack ? "101010AUTOTEST в таблице DocPack \\n" : '').
 			($id_from_docpack_list ? "0909AUTOTEST в таблице DocPackList \\n" : '').
 			($id_from_app  ? "0808AUTOTEST в таблице Appointments \\n" : '').
@@ -243,15 +243,18 @@ sub autotest
 	
 	my $test8_collection = '';
 	my $settings_test8_fixdate_num = 0;
+	my $settings_test8_concildate_num = 0;
 	
 	($did, my $settings_collect8_num) = get_settings($vars, 'test8', 'settings_collect_num');
 	($did, my $settings_test8_fixdate_s) = get_settings($vars, 'test8', 'settings_fixdate_s');
 	($did, my $settings_test8_fixdate_e) = get_settings($vars, 'test8', 'settings_fixdate_e');
+	($did, my $settings_test8_concildate) = get_settings($vars, 'test8', 'settings_concildate');
 	($did, my $settings_test8_autodate) = get_settings($vars, 'test8', 'settings_autodate');
 
 	if ($settings_test8_fixdate_s) {
 		($settings_test8_fixdate_s, $settings_test8_fixdate_num) = fix_dates_str($settings_test8_fixdate_s);
-		($settings_test8_fixdate_e, $settings_test8_fixdate_num) = fix_dates_str($settings_test8_fixdate_e); }
+		($settings_test8_fixdate_e, $settings_test8_fixdate_num) = fix_dates_str($settings_test8_fixdate_e); 
+		($settings_test8_concildate, $settings_test8_concildate_num) = fix_dates_str($settings_test8_concildate); }
 	
 	for (1..$settings_collect8_num) {
 		$test8_collection .= "'";
@@ -314,6 +317,8 @@ sub autotest
 		'settings_test8_fixdate_e' => $settings_test8_fixdate_e,
 		'settings_test8_fixdate_num' => $settings_test8_fixdate_num,
 		'settings_test8_autodate' => $settings_test8_autodate,
+		'settings_test8_concildate' => $settings_test8_concildate, 
+		'settings_test8_concildate_num' => $settings_test8_concildate_num,
 		
 		'report_enabled'=> $report_enabled,
 		'centers'	=> $centers,
@@ -724,6 +729,11 @@ sub settings
 			$value = '' if !$value;
 			$settings .= settings_form_str_chng('сохранить', $did, $value, 'TC' );
 		
+			$settings .= '<b>даты оплаты консульского сбора (в формате "дд.мм.гггг, дд.мм.гггг, ...") при выключенном автовыборе</b><br><br>';
+			($did, $value) = get_settings($vars, 'test8', 'settings_concildate');
+			$value = '' if !$value;
+			$settings .= settings_form_str_chng('сохранить', $did, $value, 'TC' );
+		
 			$settings .= 	'<b>добавить новый набор данных для проверки</b><br><br>'.
 					'<input type="button" id="collect_add" value="добавить"'.
 					' onclick="location.href=\'/autotest/settings.htm?edit=TC&add=1\'"><br><br>'.
@@ -749,7 +759,8 @@ sub settings
 			
 			$settings .= 	'APPLID - автоматически заменяется на номер AppData<br>'.
 					'START_DATE - на дату начала поездки<br>'.
-					'END_DATE - на дату окончания поездки<br><br>';
+					'END_DATE - на дату окончания поездки<br>'.
+					'CONCIL_DATE - на дату оплаты консульского сбора<br><br>';
 			
 			$settings .= settings_full_collect($vars, 'test8', $collect);
 			$settings .= settings_form_add_into_collect ($collect, 'test8', 'TC');
@@ -1584,7 +1595,8 @@ sub modultest
 	my $template = shift;
 
 	my $vars = $self->{'VCS::Vars'};
-	my $vars_for_vars = new VCS::Vars(qw( VCS::Config VCS::List VCS::System VCS::AdminFunc ));
+	my $vars_for_vars = new VCS::Vars(qw( VCS::Config VCS::List VCS::System ));
+	my $vars_for_admfnc = new VCS::AdminFunc(qw( VCS::AdminFunc ));
 
 	my $err = '';
 	my $test_num = 0;
@@ -1855,13 +1867,13 @@ sub modultest
 		'tester' => \&test_line,
 		'debug' => 0,
 		'test' => { 	1 => { 	'args' => [ '', $vars, {1 => 'aa', 2 => 'bb'}, 0, 'name', 1 ], 
-					'expected' => '<form action="/" method="POST" name="name" target="1">'.
-						'<input type="hidden" name="1" value="aa"><input type="hidden" '.
-						'name="2" value="bb">' }, 
+					'expected' => 	'<form action="/" method="POST" name="name" target="1">'.
+							'<input type="hidden" name="1" value="aa"><input type="hidden" '.
+							'name="2" value="bb">' }, 
 				2 => { 	'args' => [ '', $vars, {1 => 'aa', 2 => 'bb'}, 1 ], 
-					'expected' => '<form action="/" method="POST" enctype="multipart/form-data">'.
-						'<input type="hidden" name="1" value="aa"><input type="hidden" '.
-						'name="2" value="bb">' }, },
+					'expected' => 	'<form action="/" method="POST" enctype="multipart/form-data">'.
+							'<input type="hidden" name="1" value="aa"><input type="hidden" '.
+							'name="2" value="bb">' }, },
 	},{ 	'func' => \&VCS::System::check_mail_address,
 		'comment' => 'System / check_mail_address',
 		'tester' => \&test_line,
@@ -1877,6 +1889,39 @@ sub modultest
 		'test' => { 	1 => { 	'args' => [ '', $vars, 'cms', 'location', 'SELECT Count(*) FROM Users', ['param'] ], 
 					'expected' => [ 'position', 'show', 'pages' ] }, 
 				},
+	},{ 	'func' => \&VCS::AdminFunc::calculateCouncilFee,
+		'comment' => 'AdminFunc / calculateCouncilFee',
+		'tester' => \&test_line,
+		'debug' => 0,
+		'test' => { 	1 => { 	'args' => [ $vars_for_admfnc, $vars, 0, '01.01.1980', '24.10.2015', 0, 0, 313, 13], 
+					'expected' => '3500.00' }, 
+				2 => { 	'args' => [ $vars_for_admfnc, $vars, 0, '01.01.1980', '24.10.2015', 1, 0, 313, 13], 
+					'expected' => '7000.00' }, 
+				3 => { 	'args' => [ $vars_for_admfnc, $vars, 0, '01.01.1980', '24.10.2015', 0, 1, 313, 13], 
+					'expected' => '0' }, 
+				4 => { 	'args' => [ $vars_for_admfnc, $vars, 0, '01.01.2013', '24.10.2015', 0, 1, 313, 13], 
+					'expected' => '0' },
+				},
+	},{ 	'func' => \&VCS::AdminFunc::getPricesByAge,
+		'comment' => 'AdminFunc / getPricesByAge',
+		'tester' => \&test_hash,
+		'debug' => 0,
+		'test' => { 	1 => { 	'args' => [ $vars_for_admfnc, $vars, 313, 1, '24.10.2015', 30 ], 
+					'expected' => [ 'oconcilnu_6-12', 'age_suffix', 'visa_6-12' ] }, 
+				2 => { 	'args' => [ $vars_for_admfnc, $vars, 313, 13, '24.10.2015', 5 ], 
+					'expected' => [ 'jurgent_6-12', 'age_suffix', 'oconcilru_6-12' ] },
+				},
+	},{ 	'func' => \&VCS::AdminFunc::CalculateConcilFeeByAgreementApplicant,
+		'comment' => 'AdminFunc / CalculateConcilFeeByAgreementApplicant',
+		'tester' => \&test_line,
+		'debug' => 0,
+		'test' => { 	1 => { 	'args' => [ $vars_for_admfnc, $vars, '1815982' ], 
+					'expected' => '2787.38' },
+				2 => { 	'args' => [ $vars_for_admfnc, $vars, '1815821' ], 
+					'expected' => '2651.15' },  
+				3 => { 	'args' => [ $vars_for_admfnc, $vars, '1815978' ], 
+					'expected' => '2716.11' }, 
+				},
 	},
 	];
 	
@@ -1888,7 +1933,7 @@ sub modultest
 		for(keys %{$test->{test}}) {
 			my $tmp_r = &{$test->{func}}(@{$test->{test}->{$_}->{args}});
 			$err_tmp = &{$test->{tester}}($tmp_r, $test->{test}->{$_}->{expected},$test->{comment}) if !$err_tmp;
-			warn Dumper($tmp_r,$test->{test}->{$_}->{args}) if $test->{debug};
+			warn Dumper($tmp_r, $test->{test}->{$_}->{expected}) if $test->{debug};
 			$test_num++;
 			} 
 		$err .= "$err_tmp\\n" if $err_tmp;
@@ -2042,7 +2087,9 @@ sub settings_default
 	my $modul_tests = [
 		'AdminFunc / getPrices',	'AdminFunc / get_branch',	'AdminFunc / getAgrNumber',
 		'AdminFunc / getRate',		'AdminFunc / sum_to_russtr',	'AdminFunc / get_pre_servicecode',
-		'AdminFunc / get_currencies',	'List / getList',		'Config / getConfig',
+		'AdminFunc / get_currencies',	'AdminFunc / getPricesByAge',	'AdminFunc / calculateCouncilFee',
+		'AdminFunc / CalculateConcilFeeByAgreementApplicant',
+		'List / getList',		'Config / getConfig',
 		'Vars / getCaptchaErr',		'Vars / getConfig',		'Vars / getList',
 		'Vars / getListValue',		'Vars / getparam',		'Vars / getGLangVar',
 		'Vars / getLangVar',		'Vars / getLangSesVar',		'Vars / getform',
@@ -2406,6 +2453,7 @@ sub settings_default
 			'mfname' => 'Имя',			'mmname' => 'Отчество',
 			'mpass' => '101010AUTOTEST',		'mpassdate' => '11.11.2010',
 			'mpasswhom' => 'ОВД',			'phone' => '89117889373',
+			'concilDate' => 'CONCIL_DATE',
 			},
 			
 		2 => { 	
@@ -2436,6 +2484,7 @@ sub settings_default
 			'mfname' => 'Имя',			'mmname' => 'Отчество',
 			'mpass' => '101010AUTOTEST',		'mpassdate' => '11.11.2010',
 			'mpasswhom' => 'ОВД',			'phone' => '89117889373',
+			'concilDate' => 'CONCIL_DATE',
 			},
 			
 		3 => { 	
@@ -2466,6 +2515,7 @@ sub settings_default
 			'mfname' => 'Имя',			'mmname' => 'Отчество',
 			'mpass' => '101010AUTOTEST',		'mpassdate' => '11.11.2010',
 			'mpasswhom' => 'ОВД',			'phone' => '89117889373',
+			'concilDate' => 'CONCIL_DATE',
 			},
 		
 		4 => { 	
@@ -2496,6 +2546,7 @@ sub settings_default
 			'mfname' => 'Имя',			'mmname' => 'Отчество',
 			'mpass' => '101010AUTOTEST',		'mpassdate' => '11.11.2010',
 			'mpasswhom' => 'ОВД',			'phone' => '89117889373',
+			'concilDate' => 'CONCIL_DATE',
 			},
 		
 		5 => { 	
@@ -2526,6 +2577,7 @@ sub settings_default
 			'mfname' => 'Имя',			'mmname' => 'Отчество',
 			'mpass' => '101010AUTOTEST',		'mpassdate' => '11.11.2010',
 			'mpasswhom' => 'ОВД',			'phone' => '89117889373',
+			'concilDate' => 'CONCIL_DATE',
 			},
 		}; #test_contract
 	
@@ -2676,6 +2728,8 @@ sub settings_default
 			'test8', 'settings_fixdate_s', '');
 	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
 			'test8', 'settings_fixdate_e', '');
+	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
+			'test8', 'settings_concildate', '');
 	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
 			'test8', 'settings_autodate', 1);
 			
