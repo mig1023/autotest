@@ -28,53 +28,58 @@ sub getContent
 	my $template = shift;
 
 	my $vars = $self->{'VCS::Vars'};
-
-	if (($vars->get_session->{'login'} ne '') && ($id eq 'index')) {
+    
+    unless ($vars->get_session->{'login'}) {
+        $vars->get_system->redirect($vars->getform('fullhost').'/admin/login.htm');
+        return 1;
+    }
+    
+	if ($id eq 'index') {
 		$self->autotest($task,$id,$template);
 
-	} elsif (($vars->get_session->{'login'} ne '') && ($id eq 'captcha_h')) {
+	} elsif ($id eq 'captcha_h') {
 		$self->captcha_hack($task,$id,$template);
 
-	} elsif (($vars->get_session->{'login'} ne '') && ($id eq 'test_and_clean')) {
+	} elsif ($id eq 'test_and_clean') {
 		$self->test_and_clean($task,$id,$template);
 
-	} elsif (($vars->get_session->{'login'} ne '') && ($id eq 'langreq')) {
+	} elsif ($id eq 'langreq') {
 		$self->langreq($task,$id,$template);
 
-	} elsif (($vars->get_session->{'login'} ne '') && ($id eq 'sqltest')) {
+	} elsif ($id eq 'sqltest') {
 		$self->sql_test($task,$id,$template);
 		
-	} elsif (($vars->get_session->{'login'} ne '') && ($id eq 'modultest')) {
+	} elsif ($id eq 'modultest') {
 		$self->modultest($task,$id,$template);
 
-	} elsif (($vars->get_session->{'login'} ne '') && ($id eq 'get_aid')) {
+	} elsif ($id eq 'get_aid') {
 		$self->get_aid($task,$id,$template);
 
-	} elsif (($vars->get_session->{'login'} ne '') && ($id eq 'test_and_clean_doc')) {
+	} elsif ($id eq 'test_and_clean_doc') {
 		$self->test_and_clean_doc($task,$id,$template);
 
-	} elsif (($vars->get_session->{'login'} ne '') && ($id eq 'test_syntax')) {
+	} elsif ($id eq 'test_syntax') {
 		$self->test_syntax($task,$id,$template);
 
-	} elsif (($vars->get_session->{'login'} ne '') && ($id eq 'test_update')) {
+	} elsif ($id eq 'test_update') {
 		$self->test_update($task,$id,$template);
 
-	} elsif (($vars->get_session->{'login'} ne '') && ($id eq 'settings')) {
+	} elsif ($id eq 'settings') {
 		$self->settings($task,$id,$template);
 
-	} elsif (($vars->get_session->{'login'} ne '') && ($id eq 'settings_add')) {
+	} elsif ($id eq 'settings_add') {
 		$self->settings_add($task,$id,$template);
 
-	} elsif (($vars->get_session->{'login'} ne '') && ($id eq 'settings_del')) {
+	} elsif ($id eq 'settings_del') {
 		$self->settings_del($task,$id,$template);
 		
-	} elsif (($vars->get_session->{'login'} ne '') && ($id eq 'settings_chng')) {
+	} elsif ($id eq 'settings_chng') {
 		$self->settings_chng($task,$id,$template);
 		
-	} elsif (($vars->get_session->{'login'} ne '') && ($id eq 'collect_chng')) {
+	} elsif ($id eq 'collect_chng') {
 		$self->collect_chng($task,$id,$template);
 		
-	} elsif (($vars->get_session->{'login'} ne '') && ($id eq 'collect_add')) {
+	} elsif ($id eq 'collect_add') {
 		$self->collect_add($task,$id,$template);
 
 	} else {
@@ -2024,7 +2029,7 @@ sub settings_default
 		'doc/print_labels.htm',		'doc/print_blabels.htm',	'doc/history.htm',
 		'doc/edit_appl.htm',		'doc/status.htm',		'doc/print_banks.htm',
 		'doc/get_info.htm',		'doc/set_fpstatus.htm',		'doc/app_anketa.htm',
-		'doc/print_anketa.htm',		'doc/save_anketa.htm',		'doc/passrcv.htm',
+		'doc/print_anketa.htm',		'doc/save_anketa.htm',		
 		'doc/print_receipt.htm',	'appointments/get_dates.htm',	'appointments/get_times.htm',
 		'appointments/get_vtypes.htm',	'appointments/new.htm',		'appointments/new_ins.htm',
 		'appointments/group.htm',	'appointments/get_nearest.htm', 'appointments/add_applicant.htm',
