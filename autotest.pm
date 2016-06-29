@@ -28,65 +28,32 @@ sub getContent
 	my $template = shift;
 
 	my $vars = $self->{'VCS::Vars'};
-    
-    unless ($vars->get_session->{'login'}) {
-        $vars->get_system->redirect($vars->getform('fullhost').'/admin/login.htm');
-        return 1;
-    }
-    
-	if ($id eq 'index') {
-		$self->autotest($task,$id,$template);
-
-	} elsif ($id eq 'captcha_h') {
-		$self->captcha_hack($task,$id,$template);
-
-	} elsif ($id eq 'test_and_clean') {
-		$self->test_and_clean($task,$id,$template);
-
-	} elsif ($id eq 'langreq') {
-		$self->langreq($task,$id,$template);
-
-	} elsif ($id eq 'sqltest') {
-		$self->sql_test($task,$id,$template);
-		
-	} elsif ($id eq 'modultest') {
-		$self->modultest($task,$id,$template);
-
-	} elsif ($id eq 'get_aid') {
-		$self->get_aid($task,$id,$template);
-
-	} elsif ($id eq 'test_and_clean_doc') {
-		$self->test_and_clean_doc($task,$id,$template);
-
-	} elsif ($id eq 'test_syntax') {
-		$self->test_syntax($task,$id,$template);
-
-	} elsif ($id eq 'test_update') {
-		$self->test_update($task,$id,$template);
-
-	} elsif ($id eq 'settings') {
-		$self->settings($task,$id,$template);
-
-	} elsif ($id eq 'settings_add') {
-		$self->settings_add($task,$id,$template);
-
-	} elsif ($id eq 'settings_del') {
-		$self->settings_del($task,$id,$template);
-		
-	} elsif ($id eq 'settings_chng') {
-		$self->settings_chng($task,$id,$template);
-		
-	} elsif ($id eq 'collect_chng') {
-		$self->collect_chng($task,$id,$template);
-		
-	} elsif ($id eq 'collect_add') {
-		$self->collect_add($task,$id,$template);
-
-	} else {
-		$vars->get_system->redirect($vars->getform('fullhost').'/admin/login.htm');
-	}
-
-	return 1;
+  
+    	my $dispathcher = {
+    		'index' => \&autotest,
+    		'captcha_h' => \&captcha_hack,
+    		'test_and_clean' => \&test_and_clean,
+    		'langreq' => \&langreq,
+    		'sqltest' => \&sql_test,
+    		'modultest' => \&modultest,
+    		'get_aid' => \&get_aid,
+    		'test_and_clean_doc' => \&test_and_clean_doc,
+    		'test_syntax' => \&test_syntax,
+    		'test_update' => \&test_update,
+    		'settings' => \&settings,
+    		'settings_add' => \&settings_add,
+    		'settings_del' => \&settings_del,
+    		'settings_chng' => \&settings_chng,
+    		'collect_chng' => \&collect_chng,
+    		'collect_add' => \&collect_add,
+    		};
+    	
+    	my $disp_link = $dispathcher->{$id};
+    	$vars->get_system->redirect($vars->getform('fullhost').'/admin/login.htm')
+    		if !$disp_link or !$vars->get_session->{'login'};
+    	&{$disp_link}($self, $task, $id, $template);
+    	
+    	return 1;	
 }
 
 sub autotest
