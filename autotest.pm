@@ -72,8 +72,10 @@ sub autotest
 	my $db_connect = VCS::Config->getConfig();
 	my $db_name = $db_connect->{db}->{dbname};
 	
-	my $settings_exist = $vars->db->sel1("SELECT CREATE_TIME FROM information_schema.tables ".
-			"WHERE table_schema = ? and table_name = ? LIMIT 1", $db_name, 'Autotest');
+	my $settings_exist = $vars->db->sel1("
+			SELECT CREATE_TIME FROM information_schema.tables 
+			WHERE table_schema = ? and table_name = ? LIMIT 1",
+			$db_name, 'Autotest');
 	
 	if (!$settings_exist) {
 		settings_default($vars);
@@ -131,9 +133,9 @@ sub autotest
 	
 	# RP
 	
-	my $repen_hash = $vars->db->selall("SELECT Value FROM Autotest WHERE Test = ? AND ".
-		"Param != 'settings_format_xml' and Param != 'settings_format_zip' and ".
-		"Param != 'settings_format_pdf'", 'test4');
+	my $repen_hash = $vars->db->selall("
+		SELECT Value FROM Autotest WHERE Test = ? AND Param != 'settings_format_xml' 
+		AND Param != 'settings_format_zip' AND Param != 'settings_format_pdf'", 'test4');
 	
 	my $report_enabled = '';
 	
@@ -160,8 +162,9 @@ sub autotest
 	for (1..$settings_collect3_num) {
 		$test3_collection .= "'";
 		
-		my $coll_hash = $vars->db->selallkeys("SELECT Param, Value FROM Autotest ".
-			"WHERE Test = ? AND Param LIKE ?", 'test3', $_.':%');
+		my $coll_hash = $vars->db->selallkeys("
+			SELECT Param, Value FROM Autotest WHERE Test = ? AND Param LIKE ?", 
+			'test3', $_.':%');
 		
 		for my $coll_pair (@$coll_hash) {
 			$coll_pair->{Param} =~ s/^[^:]+?://;
@@ -183,15 +186,17 @@ sub autotest
 		$test2A_collection .= "'";
 		$test2B_collection .= "'";
 		
-		my $coll_hash = $vars->db->selallkeys("SELECT Param, Value FROM Autotest ".
-			"WHERE Test = ? AND Param LIKE ?", 'test2A', $_.':%');
+		my $coll_hash = $vars->db->selallkeys("
+			SELECT Param, Value FROM Autotest WHERE Test = ? AND Param LIKE ?", 
+			'test2A', $_.':%');
 		
 		for my $coll_pair (@$coll_hash) {
 			$coll_pair->{Param} =~ s/^[^:]+?://;
 			$test2A_collection .= '&' . $coll_pair->{Param} . '=' . $coll_pair->{Value}; }	
 		
-		$coll_hash = $vars->db->selallkeys("SELECT Param, Value FROM Autotest ".
-			"WHERE Test = ? AND Param LIKE ?", 'test2B', $_.':%');
+		$coll_hash = $vars->db->selallkeys("
+			SELECT Param, Value FROM Autotest WHERE Test = ? AND Param LIKE ?", 
+			'test2B', $_.':%');
 		
 		for my $coll_pair (@$coll_hash) {
 			$coll_pair->{Param} =~ s/^[^:]+?://;
@@ -231,8 +236,9 @@ sub autotest
 	for (1..$settings_collect8_num) {
 		$test8_collection .= "'";
 		
-		my $coll_hash = $vars->db->selallkeys("SELECT Param, Value FROM Autotest ".
-			"WHERE Test = ? AND Param LIKE ?", 'test8', $_.':%');
+		my $coll_hash = $vars->db->selallkeys("
+			SELECT Param, Value FROM Autotest WHERE Test = ? AND Param LIKE ?", 
+			'test8', $_.':%');
 		
 		for my $coll_pair (@$coll_hash) {
 			$coll_pair->{Param} =~ s/^[^:]+?://;
@@ -244,15 +250,16 @@ sub autotest
 
 	$vars->get_system->pheader($vars);
 	my $tvars = {
-		'langreq'  => sub { return $vars->getLangSesVar(@_) },
-		'vars' =>	{
-			'lang' => $vars->{'lang'},
-			'page_title'  => 'Самотестирование'
-					},
-		'form' =>	{
-			'action' => $vars->getform('action')
-					},
-		'tt_adr'	=> $tt_adr,
+		'langreq' => sub { return $vars->getLangSesVar(@_) },
+		'vars' => {
+				'lang' => $vars->{'lang'},
+				'page_title'  => 'Самотестирование'
+				},
+		'form' => {
+				'action' => $vars->getform('action')
+				},
+				
+		'tt_adr' => $tt_adr,
 		
 		'first_time_alert' => $first_time_alert,
 		
@@ -293,10 +300,10 @@ sub autotest
 		'settings_test8_concildate_num' => $settings_test8_concildate_num,
 		
 		'report_enabled'=> $report_enabled,
-		'centers'	=> $centers,
+		'centers' => $centers,
 		'centers_names'	=> $centers_names,
-		'session'	=> $vars->get_session,
-		'menu'		=> $vars->admfunc->get_menu($vars)
+		'session' => $vars->get_session,
+		'menu' => $vars->admfunc->get_menu($vars)
 	};
 	$template->process('autotest.tt2',$tvars);
 }
@@ -316,7 +323,9 @@ sub settings
 	
 	if ($edit eq 'TT') {
 		$title_add = 'Проверка страниц';
-		my $tt_adr_hash = $vars->db->selall("SELECT ID, Value FROM Autotest WHERE Test = ? AND Param = ?", 'test9', 'page_adr');
+		my $tt_adr_hash = $vars->db->selall("
+			SELECT ID, Value FROM Autotest WHERE Test = ? AND Param = ?", 
+			'test9', 'page_adr');
 		
 		$settings .= '<b>настройки проверок</b><br><br>';
 		my ($id, $value) = get_settings($vars, 'test9', 'settings_test_ref');
@@ -330,14 +339,18 @@ sub settings
 		$settings .= '<b>список проверяемых</b><br><br>';
 		for my $hash_addr (@$tt_adr_hash) {
 			my ($id, $adr) = @$hash_addr;
-			$settings .= '<input type="button" id="settings_'.$id.
-				'" value="удалить" onclick="location.pathname='."'".'/autotest/settings_del.htm?did='.$id.
-				'&ret=TT'."'".'">&nbsp;'.$adr.'<br><br>'; }	
+			$settings .= 
+				'<input type="button" id="settings_'.$id.'" value="удалить" '.
+				'onclick="location.pathname='."'".'/autotest/settings_del.htm?did='.$id.
+				'&ret=TT'."'".'">&nbsp;'.$adr.'<br><br>';
+			}	
 		}
 	
 	if ($edit eq 'TS') {
 		$title_add = 'Проверка временных интервалов';
-		my $centers = $vars->db->selall("SELECT ID, Value FROM Autotest WHERE Test = ? AND Param = ?", 'test1', 'centers');
+		my $centers = $vars->db->selall("
+			SELECT ID, Value FROM Autotest WHERE Test = ? AND Param = ?", 
+			'test1', 'centers');
 		
 		$settings .= '<b>настройки проверок</b><br><br>';
 		my ($id, $value) = get_settings($vars, 'test1', 'settings_test_error');
@@ -359,9 +372,11 @@ sub settings
 			my ($id, $cnt) = @$center;
 			my $bname = get_center_name($vars, $cnt);
 			
-			$settings .= '<input type="button" id="settings_'.$id.
-				'" value="удалить" onclick="location.pathname='."'".'/autotest/settings_del.htm?did='.$id.
-				'&ret=TS'."'".'">&nbsp;'.$cnt.'&nbsp;('.$bname.')<br><br>'; }	
+			$settings .= 
+				'<input type="button" id="settings_'.$id.'" value="удалить" '.
+				'onclick="location.pathname='."'".'/autotest/settings_del.htm?did='.$id.
+				'&ret=TS'."'".'">&nbsp;'.$cnt.'&nbsp;('.$bname.')<br><br>'; 
+			}	
 		}
 		
 	if ($edit eq 'SQL') {
@@ -378,7 +393,8 @@ sub settings
 		
 	if ($edit eq 'MT') {
 		$title_add = 'Модульные тесты';
-		my $modul_hash = $vars->db->selall("SELECT ID, Param FROM Autotest WHERE Test = ?", 'test5');
+		my $modul_hash = $vars->db->selall("
+			SELECT ID, Param FROM Autotest WHERE Test = ?", 'test5');
 		
 		$settings .= '<b>включение/отключение отдельных тестов</b><br><br>';
 
@@ -423,7 +439,8 @@ sub settings
 		$settings .= '<b>поиск русских букв без вызова подпрограмм перевода</b><br><br>';
 		
 		my ($id, $value) = get_settings($vars, 'test6', 'settings_rb_langreq');
-		$settings .= settings_form_bool($id, 'без вызова langreq / getLangSesVar / getGLangVar / getLangVar', $value, 'TR');
+		$settings .= settings_form_bool($id, 
+			'без вызова langreq / getLangSesVar / getGLangVar / getLangVar', $value, 'TR');
 		($id, $value) = get_settings($vars, 'test6', 'settings_rb_comm');
 		$settings .= settings_form_bool($id, 'игнорировать закомментированное', $value, 'TR');
 		
@@ -447,9 +464,10 @@ sub settings
 		($id, $value) = get_settings($vars, 'test4', 'settings_format_zip');
 		$settings .= settings_form_bool($id, 'ZIP', $value, 'RP');
 		
-		my $report_hash = $vars->db->selall("SELECT ID, Param FROM Autotest WHERE Test = ? AND ".
-		"Param != 'settings_format_xml' and Param != 'settings_format_zip' and ".
-		"Param != 'settings_format_pdf'", 'test4');
+		my $report_hash = $vars->db->selall("
+			SELECT ID, Param FROM Autotest WHERE Test = ? AND Param != 'settings_format_xml' 
+			AND Param != 'settings_format_zip' and Param != 'settings_format_pdf'", 
+			'test4');
 		
 		$settings .= '<b>включение/отключение проверки конкретных отчётов</b><br><br>';
 
@@ -473,7 +491,8 @@ sub settings
 			my ($did, $value) = get_settings($vars, 'test3', 'settings_autodate');
 			$settings .= settings_form_bool($did, 'автоматический выбор даты', $value, 'AA');
 		
-			$settings .= '<b>список дат подачи заявки (в формате "дд.мм.гггг, дд.мм.гггг, ...") при выключенном автовыборе</b><br><br>';
+			$settings .= '<b>список дат подачи заявки (в формате "дд.мм.гггг, дд.мм.гггг, ...") '.
+				'при выключенном автовыборе</b><br><br>';
 			($did, $value) = get_settings($vars, 'test3', 'settings_fixdate');
 			$value = '' if !$value;
 			$settings .= settings_form_str_chng('сохранить', $did, $value, 'AA' );
@@ -488,7 +507,8 @@ sub settings
 			for (1..$settings_collect3_num) {
 				($did, my $settings_collect_name) = get_settings($vars, 'test3', 
 					'settings_collect_name_'.$_);
-				$settings .= settings_form_collect('AA', $_, $settings_collect_name); }
+				$settings .= settings_form_collect('AA', $_, $settings_collect_name);
+				}
 			}
 			
 		elsif ($collect and !$del and !$add) {
@@ -517,19 +537,22 @@ sub settings
 			if ($value > $collect) {
 				for my $col_renum(($collect+1)..$value) {
 					my $new_index = $col_renum - 1;
-					my $coll_hash = $vars->db->selallkeys("SELECT ID, Param FROM Autotest ".
-						"WHERE Test = ? AND Param LIKE ?", 'test3', $col_renum.':%');
+					my $coll_hash = $vars->db->selallkeys("
+						SELECT ID, Param FROM Autotest WHERE Test = ? AND Param LIKE ?", 
+						'test3', $col_renum.':%');
 					for my $coll_pair (@$coll_hash) {
 						$coll_pair->{Param} =~ s/^[^:]+?://;
-						$r = $vars->db->query('UPDATE Autotest SET Param = ? WHERE '.
-							'ID = ?', {}, $new_index.':'.$coll_pair->{Param}, 
-							$coll_pair->{ID});
+						$r = $vars->db->query("
+							UPDATE Autotest SET Param = ? WHERE ID = ?", 
+							{}, $new_index.':'.$coll_pair->{Param}, $coll_pair->{ID});
 						}
 					($did, my $name_col) = get_settings($vars, 'test3', 
 						'settings_collect_name_'.$col_renum);
-					$r = $vars->db->query('UPDATE Autotest SET Param = ? WHERE ID = ?', {},
+					$r = $vars->db->query("
+						UPDATE Autotest SET Param = ? WHERE ID = ?", {},
 						'settings_collect_name_'.$new_index, $did);						
-				} }
+					}
+				}
 			
 			$value--;
 			$r = $vars->db->query('UPDATE Autotest SET Value = ? WHERE test = ? and Param = ?', {},
@@ -540,13 +563,17 @@ sub settings
 			my ($did, $new_index) = get_settings($vars, 'test3', 'settings_collect_num');		
 			$new_index++;
 		
-			my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
+			my $r = $vars->db->query("
+				INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)", {},
 				'test3', 'settings_collect_name_'.$new_index, 'новый набор параметров '.$new_index);
-			$r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
+			$r = $vars->db->query("
+				INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)", {},
 				'test3', $new_index.':whompass', '0808AUTOTEST');
-			$r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
+			$r = $vars->db->query("
+				INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)", {},
 				'test3', $new_index.':passnum-1', '0909AUTOTEST');
-			$r = $vars->db->query('UPDATE Autotest SET Value = ? WHERE test = ? and Param = ?', {},
+			$r = $vars->db->query("
+				UPDATE Autotest SET Value = ? WHERE test = ? and Param = ?", {},
 				$new_index, 'test3', 'settings_collect_num');
 				
 			$vars->get_system->redirect($vars->getform('fullhost').
@@ -567,7 +594,8 @@ sub settings
 			my ($did, $value) = get_settings($vars, 'test2', 'settings_autodate');
 			$settings .= settings_form_bool($did, 'автоматический выбор даты', $value, 'SF');
 		
-			$settings .= '<b>список дат для проверки (в формате "дд.мм.гггг, дд.мм.гггг, ...") при выключенном автовыборе</b><br><br>';
+			$settings .= '<b>список дат для проверки (в формате "дд.мм.гггг, дд.мм.гггг, ...") '.
+				'при выключенном автовыборе</b><br><br>';
 			$settings .= 'даты заявки<br>';
 			($did, $value) = get_settings($vars, 'test2', 'settings_appdate');
 			$value = '' if !$value;
@@ -627,49 +655,63 @@ sub settings
 			}
 
 		elsif ($collect and $del) {
-			my $r = $vars->db->query("DELETE FROM Autotest WHERE Test = ? AND Param LIKE ?", {},
+			my $r = $vars->db->query("
+				DELETE FROM Autotest WHERE Test = ? AND Param LIKE ?", {},
 				'test2', $collect.':%');
-			$r = $vars->db->query("DELETE FROM Autotest WHERE Test = ? AND Param = ?", {},
+			$r = $vars->db->query("
+				DELETE FROM Autotest WHERE Test = ? AND Param = ?", {},
 				'test2', 'settings_collect_name_'.$collect);
 			my ($did, $value) = get_settings($vars, 'test2', 'settings_collect_num');
 			
 			if ($value > $collect) {
 				for my $col_renum(($collect+1)..$value) {
 					my $new_index = $col_renum - 1;
-					my $coll_hash = $vars->db->selallkeys("SELECT ID, Param FROM Autotest ".
-						"WHERE Test = ? AND Param LIKE ?", 'test2', $col_renum.':%');
+					my $coll_hash = $vars->db->selallkeys("
+						SELECT ID, Param FROM Autotest WHERE Test = ? AND Param LIKE ?",
+						'test2', $col_renum.':%');
 					for my $coll_pair (@$coll_hash) {
 						$coll_pair->{Param} =~ s/^[^:]+?://;
-						$r = $vars->db->query('UPDATE Autotest SET Param = ? WHERE '.
-							'ID = ?', {}, $new_index.':'.$coll_pair->{Param}, 
+						$r = $vars->db->query("
+							UPDATE Autotest SET Param = ? WHERE ID = ?", 
+							{}, $new_index.':'.$coll_pair->{Param}, 
 							$coll_pair->{ID});
 						}
 					($did, my $name_col) = get_settings($vars, 'test2', 
 						'settings_collect_name_'.$col_renum);
-					$r = $vars->db->query('UPDATE Autotest SET Param = ? WHERE ID = ?', {},
-						'settings_collect_name_'.$new_index, $did);						
-				} }
+					$r = $vars->db->query("
+						UPDATE Autotest SET Param = ? WHERE ID = ?", {},
+						'settings_collect_name_'.$new_index, $did);
+					}
+				}
 			
 			$value--;
-			$r = $vars->db->query('UPDATE Autotest SET Value = ? WHERE test = ? and Param = ?', {},
+			$r = $vars->db->query("
+				UPDATE Autotest SET Value = ? WHERE test = ? and Param = ?", {},
 				$value, 'test2', 'settings_collect_num');
+				
 			$vars->get_system->redirect($vars->getform('fullhost').'/autotest/settings.htm?edit=SF');
 			}
 		elsif ($add) {
 			my ($did, $new_index) = get_settings($vars, 'test2', 'settings_collect_num');		
 			$new_index++;
 		
-			my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
+			my $r = $vars->db->query("
+				INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)", {},
 				'test2', 'settings_collect_name_'.$new_index, 'новый набор параметров '.$new_index);
-			$r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
+			$r = $vars->db->query("
+				INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)", {},
 				'test2A', $new_index.':dovpassnum', '0808AUTOTEST');
-			$r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
+			$r = $vars->db->query("
+				INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)", {},
 				'test2A', $new_index.':app_1_passnum', '0909AUTOTEST');
-			$r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
+			$r = $vars->db->query("
+				INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)", {},
 				'test2B', $new_index.':dovpassnum', '0808AUTOTEST');
-			$r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
+			$r = $vars->db->query("
+				INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)", {},
 				'test2B', $new_index.':app_1_passnum', '0909AUTOTEST');
-			$r = $vars->db->query('UPDATE Autotest SET Value = ? WHERE test = ? and Param = ?', {},
+			$r = $vars->db->query("
+				UPDATE Autotest SET Value = ? WHERE test = ? and Param = ?", {},
 				$new_index, 'test2', 'settings_collect_num');
 				
 			$vars->get_system->redirect($vars->getform('fullhost').
@@ -690,7 +732,8 @@ sub settings
 			my ($did, $value) = get_settings($vars, 'test8', 'settings_autodate');
 			$settings .= settings_form_bool($did, 'автоматический выбор даты', $value, 'TC');
 		
-			$settings .= '<b>список дат подачи заявки (в формате "дд.мм.гггг, дд.мм.гггг, ...") при выключенном автовыборе</b><br><br>';
+			$settings .= '<b>список дат подачи заявки (в формате "дд.мм.гггг, дд.мм.гггг, ...") '.
+				'при выключенном автовыборе</b><br><br>';
 			$settings .= 'даты начала поездки<br>';
 			($did, $value) = get_settings($vars, 'test8', 'settings_fixdate_s');
 			$value = '' if !$value;
@@ -701,7 +744,8 @@ sub settings
 			$value = '' if !$value;
 			$settings .= settings_form_str_chng('сохранить', $did, $value, 'TC' );
 		
-			$settings .= '<b>даты оплаты консульского сбора (в формате "дд.мм.гггг, дд.мм.гггг, ...") при выключенном автовыборе</b><br><br>';
+			$settings .= '<b>даты оплаты консульского сбора (в формате "дд.мм.гггг, дд.мм.гггг, ...") '.
+				'при выключенном автовыборе</b><br><br>';
 			($did, $value) = get_settings($vars, 'test8', 'settings_concildate');
 			$value = '' if !$value;
 			$settings .= settings_form_str_chng('сохранить', $did, $value, 'TC' );
@@ -739,31 +783,39 @@ sub settings
 			}
 
 		elsif ($collect and $del) {
-			my $r = $vars->db->query("DELETE FROM Autotest WHERE Test = ? AND Param LIKE ?", {},
+			my $r = $vars->db->query("
+				DELETE FROM Autotest WHERE Test = ? AND Param LIKE ?", {},
 				'test8', $collect.':%');
-			$r = $vars->db->query("DELETE FROM Autotest WHERE Test = ? AND Param = ?", {},
+				
+			$r = $vars->db->query("
+				DELETE FROM Autotest WHERE Test = ? AND Param = ?", {},
 				'test8', 'settings_collect_name_'.$collect);
+				
 			my ($did, $value) = get_settings($vars, 'test8', 'settings_collect_num');
 			
 			if ($value > $collect) {
 				for my $col_renum(($collect+1)..$value) {
 					my $new_index = $col_renum - 1;
-					my $coll_hash = $vars->db->selallkeys("SELECT ID, Param FROM Autotest ".
-						"WHERE Test = ? AND Param LIKE ?", 'test8', $col_renum.':%');
+					my $coll_hash = $vars->db->selallkeys("
+						SELECT ID, Param FROM Autotest WHERE Test = ? AND Param LIKE ?",
+						'test8', $col_renum.':%');
 					for my $coll_pair (@$coll_hash) {
 						$coll_pair->{Param} =~ s/^[^:]+?://;
-						$r = $vars->db->query('UPDATE Autotest SET Param = ? WHERE '.
-							'ID = ?', {}, $new_index.':'.$coll_pair->{Param}, 
-							$coll_pair->{ID});
+						$r = $vars->db->query("
+							UPDATE Autotest SET Param = ? WHERE ID = ?",
+							{}, $new_index.':'.$coll_pair->{Param},	$coll_pair->{ID});
 						}
 					($did, my $name_col) = get_settings($vars, 'test8', 
 						'settings_collect_name_'.$col_renum);
-					$r = $vars->db->query('UPDATE Autotest SET Param = ? WHERE ID = ?', {},
-						'settings_collect_name_'.$new_index, $did);						
-				} }
+					$r = $vars->db->query("
+						UPDATE Autotest SET Param = ? WHERE ID = ?", {},
+						'settings_collect_name_'.$new_index, $did);
+					}
+				}
 			
 			$value--;
-			$r = $vars->db->query('UPDATE Autotest SET Value = ? WHERE test = ? and Param = ?', {},
+			$r = $vars->db->query("
+				UPDATE Autotest SET Value = ? WHERE test = ? and Param = ?", {},
 				$value, 'test8', 'settings_collect_num');
 			$vars->get_system->redirect($vars->getform('fullhost').'/autotest/settings.htm?edit=TC');
 			}
@@ -771,11 +823,14 @@ sub settings
 			my ($did, $new_index) = get_settings($vars, 'test8', 'settings_collect_num');		
 			$new_index++;
 		
-			my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
+			my $r = $vars->db->query("
+				INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)", {},
 				'test8', 'settings_collect_name_'.$new_index, 'новый набор параметров '.$new_index);
-			$r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
+			$r = $vars->db->query("
+				INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)", {},
 				'test8', $new_index.':mpass', '101010AUTOTEST');
-			$r = $vars->db->query('UPDATE Autotest SET Value = ? WHERE test = ? and Param = ?', {},
+			$r = $vars->db->query("
+				UPDATE Autotest SET Value = ? WHERE test = ? and Param = ?", {},
 				$new_index, 'test8', 'settings_collect_num');
 				
 			$vars->get_system->redirect($vars->getform('fullhost').
@@ -814,7 +869,9 @@ sub settings_del
 	$del_id =~ s/[^\d]+//gi;
 	my $ret = $vars->getparam('ret') || '';
 	
-	my $r = $vars->db->query('DELETE FROM Autotest WHERE ID = ?',{}, $del_id);
+	my $r = $vars->db->query("
+		DELETE FROM Autotest WHERE ID = ?",
+		{}, $del_id);
 	$vars->get_system->redirect($vars->getform('fullhost').'/autotest/settings.htm?edit='.$ret);
 }
 
@@ -832,8 +889,9 @@ sub settings_add
 	my $value = $vars->getparam('value') || '';
 	my $ret = $vars->getparam('ret') || '';
 	
-	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) '.
-				'VALUES (?,?,?)', {}, $test, $param, $value);
+	my $r = $vars->db->query("
+		INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)", 
+		{}, $test, $param, $value);
 	$vars->get_system->redirect($vars->getform('fullhost').'/autotest/settings.htm?edit='.$ret);
 }
 
@@ -850,7 +908,9 @@ sub settings_chng
 	my $value = $vars->getparam('value') || '';
 	my $ret = $vars->getparam('ret') || '';
 	
-	my $r = $vars->db->query('UPDATE Autotest SET Value=? WHERE ID = ?', {}, $value, $did);
+	my $r = $vars->db->query("
+		UPDATE Autotest SET Value=? WHERE ID = ?",
+		{}, $value, $did);
 	$vars->get_system->redirect($vars->getform('fullhost').'/autotest/settings.htm?edit='.$ret);
 }
 
@@ -869,16 +929,18 @@ sub collect_chng
 	my $collect = $vars->getparam('collect') || '';
 	my $ret = $vars->getparam('ret') || '';
 	
-	my $err = $vars->db->query("UPDATE Autotest SET Value = ? WHERE ID = ?", {}, 
-			$collect_name, $collect_name_id);
+	my $err = $vars->db->query("
+		UPDATE Autotest SET Value = ? WHERE ID = ?",
+		{}, $collect_name, $collect_name_id);
 
 	for (1..$num_param) {
 		my $param_name = $vars->getparam('param-'.$_) || ''; 
 		my $param_value = $vars->getparam('value-'.$_) || ''; 
 		my $param_id = $vars->getparam('id-'.$_) || ''; 
 
-		$err = $vars->db->query("UPDATE Autotest SET Param = ?, Value = ? WHERE ID = ?", {}, 
-			$collect.':'.$param_name, $param_value, $param_id);
+		$err = $vars->db->query("
+			UPDATE Autotest SET Param = ?, Value = ? WHERE ID = ?",
+			{}, $collect.':'.$param_name, $param_value, $param_id);
 		}
 		
 	$vars->get_system->redirect($vars->getform('fullhost').'/autotest/settings.htm?edit='.$ret);
@@ -891,8 +953,9 @@ sub get_settings
 	my $test_name = shift;
 	my $param_name = shift;
 	
-	my ($test_id, $test_value) = $vars->db->sel1('select ID, VALUE from Autotest '.
-			'where test = ? and param = ?', $test_name, $param_name);
+	my ($test_id, $test_value) = $vars->db->sel1("
+		select ID, VALUE from Autotest where test = ? and param = ?", 
+		$test_name, $param_name);
 
 	$test_value = 0 if (!$test_value);
 
@@ -989,8 +1052,9 @@ sub settings_full_collect
 	my $test_index = shift;
 	my $collect_num = shift;
 
-	my $coll_hash = $vars->db->selallkeys("SELECT ID, Param, Value FROM Autotest ".
-		"WHERE Test = ? AND Param LIKE ?", $test_index, $collect_num.':%');
+	my $coll_hash = $vars->db->selallkeys("
+		SELECT ID, Param, Value FROM Autotest WHERE Test = ? AND Param LIKE ?", 
+		$test_index, $collect_num.':%');
 	
 	my $res_str = '';
 	my $index_param = 0;
@@ -1000,8 +1064,9 @@ sub settings_full_collect
 		$coll_pair->{Param} =~ s/^[^:]+?://;
 		
 		my $protect = 0;
-		$protect = 1 if ($coll_pair->{Value} eq '0808AUTOTEST') or 
-			($coll_pair->{Value} eq '0909AUTOTEST')	or ($coll_pair->{Value} eq '101010AUTOTEST');
+		$protect = 1 if ($coll_pair->{Value} eq '0808AUTOTEST')
+			or ($coll_pair->{Value} eq '0909AUTOTEST') 
+			or ($coll_pair->{Value} eq '101010AUTOTEST');
 		
 		$res_str .=  '<input type="edit" name="param-'.$index_param.'" value="'.$coll_pair->{Param}.
 			'" '.($protect ? 'readonly class="edit_dis"' : '').'> = <input type="edit" name="value-'.
@@ -1032,8 +1097,9 @@ sub collect_add
 	my $collect = $vars->getparam('collect') || '';
 	my $ret = $vars->getparam('ret') || '';
 	
-	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
-			$test , $collect.':'.$param, $value);
+	my $r = $vars->db->query("
+		INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)", {},
+		$test , $collect.':'.$param, $value);
 	
 	$vars->get_system->redirect($vars->getform('fullhost').'/autotest/settings.htm?edit='.
 			$ret.'&collect='.$collect);
@@ -1070,7 +1136,8 @@ sub get_center_name
 {
 	my $vars = shift;
 	my $center = shift;
-	my $bname = $vars->db->sel1('select BName from Branches where id = ?', $center);
+	my $bname = $vars->db->sel1("
+		SELECT BName FROM Branches WHERE id = ?", $center);
 	return $bname;	
 }
 
@@ -1086,13 +1153,17 @@ sub test_and_clean
 
 	my $err = 0;
 	
-	my ($id_app) = $vars->db->sel1("select ID from Appointments where PassNum = '0808AUTOTEST'");
-	my ($id_app_data) = $vars->db->sel1("select ID from AppData where PassNum = '0909AUTOTEST'");
+	my ($id_app) = $vars->db->sel1("
+		select ID from Appointments where PassNum = '0808AUTOTEST'");
+	my ($id_app_data) = $vars->db->sel1("
+		select ID from AppData where PassNum = '0909AUTOTEST'");
 	
 	$err = !(($id_app != 0) and ($id_app_data != 0));
 	
-	$vars->db->query("delete from Appointments where PassNum = '0808AUTOTEST'", {});
-	$vars->db->query("delete from AppData where PassNum = '0909AUTOTEST'", {});
+	$vars->db->query("
+		delete from Appointments where PassNum = '0808AUTOTEST'", {});
+	$vars->db->query("
+		delete from AppData where PassNum = '0909AUTOTEST'", {});
 	
 	$vars->get_system->pheader($vars);	
 	print "ok" if !$err;
@@ -1248,8 +1319,8 @@ sub get_db_hash
 	
 	my $rws = $vars->db->selall("show tables");
 	for my $row (@$rws) {
-		my $rws2 = $vars->db->selall("select column_name from information_schema.columns ".
-				"where table_name = '" . $row->[0] . "';");
+		my $rws2 = $vars->db->selall("
+			select column_name from information_schema.columns where table_name = $row->[0]");
    		for my $row2 (@$rws2) {	
    			$row->[0] = lc($row->[0]);
    			$row2->[0] = lc($row2->[0]);
@@ -1390,15 +1461,22 @@ sub get_aid
 
 	my $err = 0;
 	
-	my ($id_app) = $vars->db->sel1("select ID from Appointments where PassNum = '0808AUTOTEST'");
-	my ($id_app_data) = $vars->db->sel1("select ID from AppData where PassNum = '0909AUTOTEST'");
+	my ($id_app) = $vars->db->sel1("
+		select ID from Appointments where PassNum = '0808AUTOTEST'");
+	my ($id_app_data) = $vars->db->sel1("
+		select ID from AppData where PassNum = '0909AUTOTEST'");
 	
 	$vars->get_system->pheader($vars);
 	if ( ($id_app != 0) && ($id_app_data != 0) ) {
-		$err = $vars->db->query("update Appointments set AppDate = curdate() where ID = ?", {}, $id_app);
-		print $id_app.'|'.$id_app_data; }
+
+		$err = $vars->db->query("
+			update Appointments set AppDate = curdate() where ID = ?", 
+			{}, $id_app);
+		print $id_app.'|'.$id_app_data;
+		}
 	else {
-		print "db error"; };
+		print "db error";
+		};
 }
 
 sub test_and_clean_doc
@@ -1413,16 +1491,23 @@ sub test_and_clean_doc
 
 	my $err = 0;
 	
-	my ($id_app) = $vars->db->sel1("select ID from Appointments where PassNum = '0808AUTOTEST'");
-	my ($id_app_data) = $vars->db->sel1("select ID from AppData where PassNum = '0909AUTOTEST'");
-	my ($doc_pack) = $vars->db->sel1("select ID from DocPack where PassNum = '101010AUTOTEST'");
-	my ($doc_pack_info) = $vars->db->sel1("select ID from DocPackInfo where PackID = ?", $doc_pack);
+	my ($id_app) = $vars->db->sel1("
+		select ID from Appointments where PassNum = '0808AUTOTEST'");
+	my ($id_app_data) = $vars->db->sel1("
+		select ID from AppData where PassNum = '0909AUTOTEST'");
+	my ($doc_pack) = $vars->db->sel1("
+		select ID from DocPack where PassNum = '101010AUTOTEST'");
+	my ($doc_pack_info) = $vars->db->sel1("
+		select ID from DocPackInfo where PackID = ?", $doc_pack);
 	
 	$err = !(($id_app != 0) and ($id_app_data != 0) and (($doc_pack) != 0) and (($doc_pack_info) != 0));
 	
-	$vars->db->query("delete from DocPack where PassNum = '101010AUTOTEST'", {});
-	$vars->db->query("delete from DocPackInfo where PackID = ?", {}, $doc_pack);
-	$vars->db->query("delete from DocPackList where PassNum = '0909AUTOTEST'");
+	$vars->db->query("
+		delete from DocPack where PassNum = '101010AUTOTEST'", {});
+	$vars->db->query("
+		delete from DocPackInfo where PackID = ?", {}, $doc_pack);
+	$vars->db->query("
+		delete from DocPackList where PassNum = '0909AUTOTEST'");
 	
 	$vars->get_system->pheader($vars);	
 	print "ok" if !$err;
@@ -1496,9 +1581,11 @@ sub test_update
 	($did, my $test_difeuro) = get_settings($vars, 'test11', 'settings_test_difeuro');
 	($did, my $def_percent) = get_settings($vars, 'test11', 'settings_test_difper');
 	
-	my $last_rate = $vars->db->selallkeys("select p.BranchID as R_id, max(p.RDate) as R_date, l.ConcilR ".
-				"from Branches b join PriceRate p on b.ID = p.BranchID ".
-				"join PriceList l on p.ID = l.RateID where VisaID = 1 group by p.BranchID");
+	my $last_rate = $vars->db->selallkeys("
+		select p.BranchID as R_id, max(p.RDate) as R_date, l.ConcilR from Branches b 
+		join PriceRate p on b.ID = p.BranchID 
+		join PriceList l on p.ID = l.RateID 
+		where VisaID = 1 group by p.BranchID");
 	
 	my ($day, $month, $year) = (localtime)[3..5];
 	$month++; 
@@ -1585,264 +1672,529 @@ sub modultest
 		'comment' => 'AdminFunc / getPrices',
 		'tester' => \&test_hash,
 		'debug' => 0,
-		'test' => { 	1 => { 'args' => ['',$vars,1595,1,'01.01.2010'], 'expected' => ['urgent','visa','photosrv'] },
-				2 => { 'args' => ['',$vars,1586,1,'01.01.2012'], 'expected' => ['vipsrv','shipnovat','xerox'] },
-				3 => { 'args' => ['',$vars,1178,1,'01.01.2014'], 'expected' => ['shipping','printsrv','anketasrv'] }, },
+		'test' => { 	1 => { 
+					'args' => ['',$vars,1595,1,'01.01.2010'], 
+					'expected' => ['urgent','visa','photosrv'] },
+				2 => { 	
+					'args' => ['',$vars,1586,1,'01.01.2012'], 
+					'expected' => ['vipsrv','shipnovat','xerox'] },
+				3 => { 
+					'args' => ['',$vars,1178,1,'01.01.2014'], 
+					'expected' => ['shipping','printsrv','anketasrv'] }, 
+				},
+				
 	},{ 	'func' => \&VCS::AdminFunc::get_branch,
 		'comment' => 'AdminFunc / get_branch',
 		'tester' => \&test_hash,
 		'debug' => 0,
-		'test' => { 	1 => { 'args' => ['',$vars,1], 'expected' => ['calcInsurance','CollectDate','isPrepayedAppointment'] }, 
-				2 => { 'args' => ['',$vars,29], 'expected' => ['Embassy','persPerDHLPackage','isShippingFree'] },
-				3 => { 'args' => ['',$vars,39], 'expected' => ['cdSimpl','CTemplate','Timezone'] }, },
+		'test' => { 	1 => { 	
+					'args' => ['',$vars,1], 
+					'expected' => ['calcInsurance','CollectDate','isPrepayedAppointment'] }, 
+				2 => { 	
+					'args' => ['',$vars,29], 
+					'expected' => ['Embassy','persPerDHLPackage','isShippingFree'] },
+				3 => { 	
+					'args' => ['',$vars,39], 
+					'expected' => ['cdSimpl','CTemplate','Timezone'] },
+				},
+				
 	},{ 	'func' => \&VCS::AdminFunc::getAgrNumber,
 		'comment' => 'AdminFunc / getAgrNumber',
 		'tester' => \&test_line,
 		'debug' => 0,
-		'test' => { 	1 => { 'args' => ['',$vars,1,'01.01.2010'], 'expected' => '0100000101.01.2010' },
-				2 => { 'args' => ['',$vars,29,'01.01.2012'], 'expected' => '2900000101.01.2012' },
-				3 => { 'args' => ['',$vars,39,'01.01.2014'], 'expected' => '3900000101.01.2014' }, },
+		'test' => { 	1 => { 
+					'args' => ['',$vars,1,'01.01.2010'], 
+					'expected' => '0100000101.01.2010' },
+				2 => { 
+					'args' => ['',$vars,29,'01.01.2012'], 
+					'expected' => '2900000101.01.2012' },
+				3 => { 
+					'args' => ['',$vars,39,'01.01.2014'], 
+					'expected' => '3900000101.01.2014' }, 
+				},
+				
 	},{ 	'func' => \&VCS::AdminFunc::getRate,
 		'comment' => 'AdminFunc / getRate',
 		'tester' => \&test_line,
 		'debug' => 0,
-		'test' => { 	1 => { 'args' => ['',$vars,'RUR','31.12.2014',1], 'expected' => '1595' },
-				2 => { 'args' => ['',$vars,'RUR','21.10.2014',29], 'expected' => '1604' },
-				3 => { 'args' => ['',$vars,'RUR','20.10.2015',39], 'expected' => '1600' }, },
+		'test' => { 	1 => { 
+					'args' => ['',$vars,'RUR','31.12.2014',1], 
+					'expected' => '1595' },
+				2 => { 
+					'args' => ['',$vars,'RUR','21.10.2014',29], 
+					'expected' => '1604' },
+				3 => { 
+					'args' => ['',$vars,'RUR','20.10.2015',39], 
+					'expected' => '1600' }, 
+				},
+				
 	},{ 	'func' => \&VCS::AdminFunc::sum_to_russtr,
 		'comment' => 'AdminFunc / sum_to_russtr',
 		'tester' => \&test_line,
 		'debug' => 0,
-		'test' => { 	1 => { 'args' => ['','RUR','10000.00'], 'expected' => 'ДЕСЯТЬ ТЫСЯЧ 00 КОПЕЕК' },
-				2 => { 'args' => ['','EUR','33023.01'], 'expected' => 'ТРИДЦАТЬ ТРИ ТЫСЯЧИ ДВАДЦАТЬ ТРИ ЕВРО 01 ЕВРОЦЕНТ' },
-				3 => { 'args' => ['','RUR','75862.21'], 'expected' => 'СЕМЬДЕСЯТ ПЯТЬ ТЫСЯЧ ВОСЕМЬСОТ ШЕСТЬДЕСЯТ ДВА РУБЛЯ 21 КОПЕЙКА' }, },
+		'test' => { 	1 => { 
+					'args' => ['','RUR','10000.00'], 
+					'expected' => 'ДЕСЯТЬ ТЫСЯЧ 00 КОПЕЕК' },
+				2 => { 
+					'args' => ['','EUR','33023.01'], 
+					'expected' => 'ТРИДЦАТЬ ТРИ ТЫСЯЧИ ДВАДЦАТЬ ТРИ ЕВРО 01 ЕВРОЦЕНТ' },
+				3 => { 
+					'args' => ['','RUR','75862.21'], 
+					'expected' => 'СЕМЬДЕСЯТ ПЯТЬ ТЫСЯЧ ВОСЕМЬСОТ ШЕСТЬДЕСЯТ ДВА РУБЛЯ 21 КОПЕЙКА' }, 
+				},
+				
 	},{ 	'func' => \&VCS::AdminFunc::get_pre_servicecode,
 		'comment' => 'AdminFunc / get_pre_servicecode',
 		'tester' => \&test_line,
 		'debug' => 0,
-		'test' => { 	1 => { 'args' => ['',$vars,'visa',{'center'=>1,'urgent'=>1,'jurid'=>1,'ptype'=>1} ], 'expected' => 'ITA00122' },
-				2 => { 'args' => ['',$vars,'visa',{'center'=>14, 'urgent'=>0,'jurid'=>0,'ptype'=>2} ], 'expected' => 'ITA12201' },
-				3 => { 'args' => ['',$vars,'concilc',{'center'=>20,'urgent'=>1,'jurid'=>0,'ptype'=>1} ], 'expected' => 'ITA19601' }, },
+		'test' => { 	1 => { 
+					'args' => ['',$vars,'visa',{'center'=>1,'urgent'=>1,'jurid'=>1,'ptype'=>1} ], 
+					'expected' => 'ITA00122' },
+				2 => { 
+					'args' => ['',$vars,'visa',{'center'=>14, 'urgent'=>0,'jurid'=>0,'ptype'=>2} ], 
+					'expected' => 'ITA12201' },
+				3 => { 
+					'args' => ['',$vars,'concilc',{'center'=>20,'urgent'=>1,'jurid'=>0,'ptype'=>1} ], 
+					'expected' => 'ITA19601' }, 
+				},
+				
 	},{ 	'func' => \&VCS::AdminFunc::get_currencies,
 		'comment' => 'AdminFunc / get_currencies',
 		'tester' => \&test_hash,
 		'debug' => 0,
-		'test' => { 	1 => { 'args' => ['',$vars], 'expected' => [ 'RUR' ] }, }, 
+		'test' => { 	1 => { 
+					'args' => ['',$vars], 
+					'expected' => [ 'RUR' ] },
+				}, 
 	
 	},{ 	'func' => \&VCS::List::getList,
 		'comment' => 'List / getList',
 		'tester' => \&test_hash,
 		'debug' => 0,
-		'test' => { 	1 => { 'args' => [ 'null' ], 'expected' => [ 'gender', 'days', 'doc_status' ] }, },
+		'test' => { 	1 => { 
+					'args' => [ 'null' ], 
+					'expected' => [ 'gender', 'days', 'doc_status' ] }, 
+				},
 	
 	},{ 	'func' => \&VCS::Config::getConfig,
 		'comment' => 'Config / getConfig',
 		'tester' => \&test_hash,
 		'debug' => 0,
-		'test' => { 	1 => { 'args' => [ 'null' ], 'expected' => [ 'general', 'dhl', 'sms_http', 'authlist', 'db', 'templates' ] }, },
+		'test' => { 	1 => { 
+					'args' => [ 'null' ], 
+					'expected' => [ 'general', 'dhl', 'sms_http', 'authlist', 'db', 'templates' ] }, 
+				},
 	
 	},{ 	'func' => \&VCS::Vars::getCaptchaErr,
 		'comment' => 'Vars / getCaptchaErr',
 		'tester' => \&test_line,
 		'debug' => 0,
-		'test' => { 	1 => { 'args' => ['', '0' ], 'expected' => 'Файл не найден' },
-				2 => { 'args' => ['', '-1' ], 'expected' => 'Время действия кода истекло' },
-				3 => { 'args' => ['', '-3' ], 'expected' => 'Неверно указан код на изображении' }, },
+		'test' => { 	1 => { 
+					'args' => ['', '0' ], 
+					'expected' => 'Файл не найден' },
+				2 => { 
+					'args' => ['', '-1' ], 
+					'expected' => 'Время действия кода истекло' },
+				3 => { 
+					'args' => ['', '-3' ], 
+					'expected' => 'Неверно указан код на изображении' }, 
+				},
+				
 	},{ 	'func' => \&VCS::Vars::getConfig,
 		'comment' => 'Vars / getConfig',
 		'tester' => \&test_hash,
 		'debug' => 0,
-		'test' => { 	1 => { 'args' => [ $vars_for_vars, 'dhl' ], 'expected' => [ 'PersonName', 'CompanyAddress', 'CompanyName' ] },
-				2 => { 'args' => [ $vars_for_vars, 'templates' ], 'expected' => [ 'report', 'settings', 'nist' ] },
-				3 => { 'args' => [ $vars_for_vars, 'general' ], 'expected' => [ 'base_currency', 'files_delivery', 'pers_data_agreem' ] }, },
+		'test' => { 	1 => { 
+					'args' => [ $vars_for_vars, 'dhl' ], 
+					'expected' => [ 'PersonName', 'CompanyAddress', 'CompanyName' ] },
+				2 => { 
+					'args' => [ $vars_for_vars, 'templates' ], 
+					'expected' => [ 'report', 'settings', 'nist' ] },
+				3 => { 
+					'args' => [ $vars_for_vars, 'general' ], 
+					'expected' => [ 'base_currency', 'files_delivery', 'pers_data_agreem' ] }, 
+				},
+				
 	},{ 	'func' => \&VCS::Vars::getList,
 		'comment' => 'Vars / getList',
 		'tester' => \&test_hash,
 		'debug' => 0,
-		'test' => { 	1 => { 'args' => [ $vars_for_vars, 'languages' ], 'expected' => [ 'ru', 'en', 'it' ] },
-				2 => { 'args' => [ $vars_for_vars, 'app_status' ], 'expected' => [ 1, 3, 5 ] },
-				3 => { 'args' => [ $vars_for_vars, 'service_codes' ], 'expected' => [ '01VP01', '11VP01', '15VP02' ] }, },
+		'test' => { 	1 => { 
+					'args' => [ $vars_for_vars, 'languages' ], 
+					'expected' => [ 'ru', 'en', 'it' ] },
+				2 => { 
+					'args' => [ $vars_for_vars, 'app_status' ], 
+					'expected' => [ 1, 3, 5 ] },
+				3 => { 
+					'args' => [ $vars_for_vars, 'service_codes' ], 
+					'expected' => [ '01VP01', '11VP01', '15VP02' ] },
+				},
+				
 	},{ 	'func' => \&VCS::Vars::getListValue,
 		'comment' => 'Vars / getListValue',
 		'tester' => \&test_line,
 		'debug' => 0,
-		'test' => { 	1 => { 'args' => [ $vars_for_vars, 'days', 4 ], 'expected' => 'Thursday' },
-				2 => { 'args' => [ $vars_for_vars, 'short_currency', 'RUR' ], 'expected' => 'руб.' },
-				3 => { 'args' => [ $vars_for_vars, 'service_codes', '01VP03' ], 'expected' => 'ITA00201' }, },
+		'test' => { 	1 => { 
+					'args' => [ $vars_for_vars, 'days', 4 ], 
+					'expected' => 'Thursday' },
+				2 => { 
+					'args' => [ $vars_for_vars, 'short_currency', 'RUR' ], 
+					'expected' => 'руб.' },
+				3 => { 
+					'args' => [ $vars_for_vars, 'service_codes', '01VP03' ], 
+					'expected' => 'ITA00201' }, 
+				},
+				
 	},{ 	'func' => \&VCS::Vars::getparam,
 		'comment' => 'Vars / getparam',
 		'tester' => \&test_line,
 		'debug' => 0,
-		'test' => { 	1 => { 'args' => [ $vars, 'test_param' ], 'expected' => 'test_is_ok' },
-				2 => { 'args' => [ $vars, 'id' ], 'expected' => 'modultest' },
-				3 => { 'args' => [ $vars, 'task' ], 'expected' => 'autotest' }, },
+		'test' => { 	1 => { 
+					'args' => [ $vars, 'test_param' ], 
+					'expected' => 'test_is_ok' },
+				2 => { 
+					'args' => [ $vars, 'id' ], 
+					'expected' => 'modultest' },
+				3 => { 
+					'args' => [ $vars, 'task' ], 
+					'expected' => 'autotest' }, 
+				},
+				
 	},{ 	'func' => \&VCS::Vars::getGLangVar,
 		'comment' => 'Vars / getGLangVar',
 		'tester' => \&test_line,
 		'debug' => 0,
-		'test' => { 	1 => { 'args' => [ $vars, 'doc_ready', 'ru' ], 'expected' => 'Документы готовы для получения' }, 
-				2 => { 'args' => [ $vars, 'payed', 'en' ], 'expected' => 'The agreement has been paid' },
-				3 => { 'args' => [ $vars, 'wait_for_payment', 'it' ], 'expected' => 'Pagamento del contratto da effettuare' }, },
+		'test' => { 	1 => { 	
+					'args' => [ $vars, 'doc_ready', 'ru' ], 
+					'expected' => 'Документы готовы для получения' }, 
+				2 => { 
+					'args' => [ $vars, 'payed', 'en' ], 
+					'expected' => 'The agreement has been paid' },
+				3 => { 
+					'args' => [ $vars, 'wait_for_payment', 'it' ], 
+					'expected' => 'Pagamento del contratto da effettuare' }, 
+				},
+				
 	},{ 	'func' => \&VCS::Vars::getLangVar,
 		'comment' => 'Vars / getLangVar',
 		'tester' => \&test_line,
 		'debug' => 0,
-		'test' => { 	1 => { 'args' => [ $vars, 'doc_ready' ], 'expected' => 'Документы готовы для получения' },
-				2 => { 'args' => [ $vars, 'payed' ], 'expected' => 'Договор оплачен' },
-				3 => { 'args' => [ $vars, 'wait_for_payment' ], 'expected' => 'Ожидается оплата договора' }, },
+		'test' => { 	1 => { 
+					'args' => [ $vars, 'doc_ready' ], 
+					'expected' => 'Документы готовы для получения' },
+				2 => { 
+					'args' => [ $vars, 'payed' ], 
+					'expected' => 'Договор оплачен' },
+				3 => { 
+					'args' => [ $vars, 'wait_for_payment' ], 
+					'expected' => 'Ожидается оплата договора' }, 
+				},
+				
 	},{ 	'func' => \&VCS::Vars::getLangSesVar,
 		'comment' => 'Vars / getLangSesVar',
 		'tester' => \&test_line,
 		'debug' => 0,
-		'test' => { 	1 => { 'args' => [ $vars, 'doc_ready', 'ru' ], 'expected' => 'Документы готовы для получения' }, 
-				2 => { 'args' => [ $vars, 'payed', 'en' ], 'expected' => 'Договор оплачен' },
-				3 => { 'args' => [ $vars, 'wait_for_payment', 'it' ], 'expected' => 'Ожидается оплата договора' } },
+		'test' => { 	1 => { 
+					'args' => [ $vars, 'doc_ready', 'ru' ], 
+					'expected' => 'Документы готовы для получения' }, 
+				2 => { 
+					'args' => [ $vars, 'payed', 'en' ], 
+					'expected' => 'Договор оплачен' },
+				3 => { 
+					'args' => [ $vars, 'wait_for_payment', 'it' ], 
+					'expected' => 'Ожидается оплата договора' } 
+				},
+				
 	},{ 	'func' => \&VCS::Vars::getform,
 		'comment' => 'Vars / getform',
 		'tester' => \&test_line_substr,
 		'debug' => 0,
-		'test' => { 	1 => { 'args' => [ $vars, 'fullhost' ], 'expected' =>  'http://' }, 
-				2 => { 'args' => [ $vars, 'action' ], 'expected' => '/autotest/modultest.htm' } },
+		'test' => { 	1 => { 
+					'args' => [ $vars, 'fullhost' ], 
+					'expected' =>  'http://' }, 
+				2 => { 
+					'args' => [ $vars, 'action' ], 
+					'expected' => '/autotest/modultest.htm' } 
+				},
+				
 	},{ 	'func' => \&VCS::System::RTF_string,
 		'comment' => 'System / RTF_string',
 		'tester' => \&test_line,
 		'debug' => 0,
-		'test' => { 	1 => { 'args' => [ '', 'ABC', ], 'expected' => '\\u65?\\u66?\\u67?' }, 
-				2 => { 'args' => [ '', '*/"""__', ], 'expected' => '\\u42?\\u47?\\u34?\\u34?\\u34?\\u95?\\u95?' } },
+		'test' => { 	1 => { 
+					'args' => [ '', 'ABC', ], 
+					'expected' => '\\u65?\\u66?\\u67?' }, 
+				2 => { 
+					'args' => [ '', '*/"""__', ], 
+					'expected' => '\\u42?\\u47?\\u34?\\u34?\\u34?\\u95?\\u95?' } 
+				},
+				
 	},{ 	'func' => \&VCS::System::encodeurl,
 		'comment' => 'System / encodeurl',
 		'tester' => \&test_line,
 		'debug' => 0,
-		'test' => { 	1 => { 'args' => [ '', 'http://www.italy-vms.ru', ], 'expected' => 'http%3A%2F%2Fwww.italy-vms.ru' }, 
-				2 => { 'args' => [ '', 'http://www.estonia-vms.ru', ],'expected' =>  'http%3A%2F%2Fwww.estonia-vms.ru' } },
+		'test' => { 	1 => { 
+					'args' => [ '', 'http://www.italy-vms.ru', ], 
+					'expected' => 'http%3A%2F%2Fwww.italy-vms.ru' }, 
+				2 => { 
+					'args' => [ '', 'http://www.estonia-vms.ru', ],
+					'expected' =>  'http%3A%2F%2Fwww.estonia-vms.ru' } 
+				},
+				
 	},{ 	'func' => \&VCS::System::decodeurl,
 		'comment' => 'System / decodeurl',
 		'tester' => \&test_line,
 		'debug' => 0,
-		'test' => { 	1 => { 'args' => [ '', 'http%3A%2F%2Fwww.italy-vms.ru', ], 'expected' =>  'http://www.italy-vms.ru' }, 
-				2 => { 'args' => [ '', 'http%3A%2F%2Fwww.estonia-vms.ru', ], 'expected' => 'http://www.estonia-vms.ru' } },
+		'test' => { 	1 => { 
+					'args' => [ '', 'http%3A%2F%2Fwww.italy-vms.ru', ], 
+					'expected' =>  'http://www.italy-vms.ru' }, 
+				2 => { 
+					'args' => [ '', 'http%3A%2F%2Fwww.estonia-vms.ru', ], 
+					'expected' => 'http://www.estonia-vms.ru' } 
+				},
+				
 	},{ 	'func' => \&VCS::System::cutEmpty,
 		'comment' => 'System / cutEmpty',
 		'tester' => \&test_line,
 		'debug' => 0,
-		'test' => { 	1 => { 'args' => [ '', '   ABCD       ', ], 'expected' => 'ABCD' }, 
-				2 => { 'args' => [ '', '&nbsp;&nbsp;EFGH&nbsp;&nbsp;', ], 'expected' => 'EFGH' } },
+		'test' => { 	1 => { 
+					'args' => [ '', '   ABCD       ', ], 
+					'expected' => 'ABCD' }, 
+				2 => { 
+					'args' => [ '', '&nbsp;&nbsp;EFGH&nbsp;&nbsp;', ], 
+					'expected' => 'EFGH' } 
+				},
+				
 	},{ 	'func' => \&VCS::System::is_adult,
 		'comment' => 'System / is_adult',
 		'tester' => \&test_line,
 		'debug' => 0,
-		'test' => { 	1 => { 'args' => [ '', '25.01.1998', '25.01.2016' ], 'expected' => 1 }, 
-				2 => { 'args' => [ '', '26.01.1998', '25.01.2016' ], 'expected' => 0 },
-				3 => { 'args' => [ '', '25.01.2015', '25.01.2016' ], 'expected' => 0 }, },
+		'test' => { 	1 => { 
+					'args' => [ '', '25.01.1998', '25.01.2016' ], 
+					'expected' => 1 }, 
+				2 => { 
+					'args' => [ '', '26.01.1998', '25.01.2016' ], 
+					'expected' => 0 },
+				3 => { 
+					'args' => [ '', '25.01.2015', '25.01.2016' ], 
+					'expected' => 0 }, 
+				},
+				
 	},{ 	'func' => \&VCS::System::is_child,
 		'comment' => 'System / is_child',
 		'tester' => \&test_line,
 		'debug' => 0,
-		'test' => { 	1 => { 'args' => [ '', '24.01.2010', '25.01.2016' ], 'expected' => 0 }, 
-				2 => { 'args' => [ '', '26.01.2010', '25.01.2016' ], 'expected' => 1 },
-				3 => { 'args' => [ '', '25.01.2016', '25.01.2016' ], 'expected' => 1 }, },
+		'test' => { 	1 => { 
+					'args' => [ '', '24.01.2010', '25.01.2016' ], 
+					'expected' => 0 }, 
+				2 => { 
+					'args' => [ '', '26.01.2010', '25.01.2016' ], 
+					'expected' => 1 },
+				3 => { 
+					'args' => [ '', '25.01.2016', '25.01.2016' ], 
+					'expected' => 1 }, 
+				},
+				
 	},{ 	'func' => \&VCS::System::age,
 		'comment' => 'System / age',
 		'tester' => \&test_line,
 		'debug' => 0,
-		'test' => { 	1 => { 'args' => [ '', '1998-01-25', '2016-01-25' ], 'expected' => 18 }, 
-				2 => { 'args' => [ '', '1998-01-26', '2016-01-25' ], 'expected' => 17 },
-				3 => { 'args' => [ '', '2010-01-26', '2016-01-25' ], 'expected' => 5 },
-				4 => { 'args' => [ '', '2010-01-25', '2016-01-25' ], 'expected' => 6 }, },
+		'test' => { 	1 => { 
+					'args' => [ '', '1998-01-25', '2016-01-25' ], 
+					'expected' => 18 }, 
+				2 => { 
+					'args' => [ '', '1998-01-26', '2016-01-25' ], 
+					'expected' => 17 },
+				3 => { 
+					'args' => [ '', '2010-01-26', '2016-01-25' ], 
+					'expected' => 5 },
+				4 => { 
+					'args' => [ '', '2010-01-25', '2016-01-25' ], 
+					'expected' => 6 },
+				},
+				
 	},{ 	'func' => \&VCS::System::rus_letters_pass,
 		'comment' => 'System / rus_letters_pass',
 		'tester' => \&test_line,
 		'debug' => 0,
-		'test' => { 	1 => { 'args' => [ '', $ru_utf_1 ], 'expected' => 'ABCD' }, 
-				2 => { 'args' => [ '', $ru_utf_2 ], 'expected' => 'EFE' } },
+		'test' => { 	1 => { 
+					'args' => [ '', $ru_utf_1 ],
+					'expected' => 'ABCD' }, 
+				2 => {
+					'args' => [ '', $ru_utf_2 ],
+					'expected' => 'EFE' }
+				},
+				
 	},{ 	'func' => \&VCS::System::transliteration,
 		'comment' => 'System / transliteration',
 		'tester' => \&test_line,
 		'debug' => 0,
-		'test' => { 	1 => { 'args' => [ '', $ru_utf_3 ], 'expected' => 'AABBVGCDD' }, 
-				2 => { 'args' => [ '', $ru_utf_4 ], 'expected' => 'EYAYOFYUYUIYE' } },
+		'test' => { 	1 => { 
+					'args' => [ '', $ru_utf_3 ], 
+					'expected' => 'AABBVGCDD' }, 
+				2 => { 
+					'args' => [ '', $ru_utf_4 ],
+					'expected' => 'EYAYOFYUYUIYE' }
+				},
+				
 	},{ 	'func' => \&VCS::System::to_lower_case,
 		'comment' => 'System / to_lower_case',
 		'tester' => \&test_line,
 		'debug' => 0,
-		'test' => { 	1 => { 'args' => [ '', 'ABCDEFGH' ], 'expected' => 'abcdefgh' }, 
-				2 => { 'args' => [ '', 'D_E_F_H' ], 'expected' => 'd_e_f_h' } },
+		'test' => { 	1 => { 
+					'args' => [ '', 'ABCDEFGH' ],
+					'expected' => 'abcdefgh' }, 
+				2 => {
+					'args' => [ '', 'D_E_F_H' ],
+					'expected' => 'd_e_f_h' }
+				},
+				
 	},{ 	'func' => \&VCS::System::to_upper_case,
 		'comment' => 'System / to_upper_case',
 		'tester' => \&test_line,
 		'debug' => 0,
-		'test' => { 	1 => { 'args' => [ '', 'abcdefgh' ], 'expected' => 'ABCDEFGH' }, 
-				2 => { 'args' => [ '', 'd_e_f_h' ], 'expected' => 'D_E_F_H' } },
+		'test' => { 	1 => {
+					'args' => [ '', 'abcdefgh' ],
+					'expected' => 'ABCDEFGH' }, 
+				2 => {
+					'args' => [ '', 'd_e_f_h' ],
+					'expected' => 'D_E_F_H' }
+				},
+				
 	},{ 	'func' => \&VCS::System::to_upper_case_first,
 		'comment' => 'System / to_upper_case_first',
 		'tester' => \&test_line,
 		'debug' => 0,
-		'test' => { 	1 => { 'args' => [ '', 'abcdefgh' ], 'expected' => 'Abcdefgh' }, 
-				2 => { 'args' => [ '', 'e_f_h' ], 'expected' => 'E_f_h' } },
+		'test' => { 	1 => {
+					'args' => [ '', 'abcdefgh' ],
+					'expected' => 'Abcdefgh' }, 
+				2 => {
+					'args' => [ '', 'e_f_h' ],
+					'expected' => 'E_f_h' }
+				},
+				
 	},{ 	'func' => \&VCS::System::get_fulldate,
 		'comment' => 'System / get_fulldate',
 		'tester' => \&test_line,
 		'debug' => 0,
-		'test' => { 	1 => { 'args' => [ '', 1453710363 ], 'expected' => '25.01.2016 11:26:03' }, 
-				2 => { 'args' => [ '', 1403310427 ], 'expected' => '21.06.2014 04:27:07' } },
+		'test' => { 	1 => {
+					'args' => [ '', 1453710363 ],
+					'expected' => '25.01.2016 11:26:03' }, 
+				2 => {
+					'args' => [ '', 1403310427 ],
+					'expected' => '21.06.2014 04:27:07' }
+				},
+				
 	},{ 	'func' => \&VCS::System::now_date,
 		'comment' => 'System / now_date',
 		'tester' => \&test_line,
 		'debug' => 0,
-		'test' => { 	1 => { 'args' => [ '', 1453710363 ], 'expected' => '2016-01-25' }, 
-				2 => { 'args' => [ '', 1403310427 ], 'expected' => '2014-06-21' } },
+		'test' => { 	1 => {
+					'args' => [ '', 1453710363 ],
+					'expected' => '2016-01-25' }, 
+				2 => {
+					'args' => [ '', 1403310427 ],
+					'expected' => '2014-06-21' }
+				},
+				
 	},{ 	'func' => \&VCS::System::cmp_date,
 		'comment' => 'System / cmp_date',
 		'tester' => \&test_line,
 		'debug' => 0,
-		'test' => { 	1 => { 'args' => [ '', '26.01.2016', '2016-01-25' ], 'expected' => -1 }, 
-				2 => { 'args' => [ '', '2016-01-25', '25.01.2016' ], 'expected' => 0 },
-				3 => { 'args' => [ '', '24.01.2016', '2016-01-25' ], 'expected' => 1 } },
+		'test' => { 	1 => {
+					'args' => [ '', '26.01.2016', '2016-01-25' ],
+					'expected' => -1 }, 
+				2 => {
+					'args' => [ '', '2016-01-25', '25.01.2016' ],
+					'expected' => 0 },
+				3 => {
+					'args' => [ '', '24.01.2016', '2016-01-25' ],
+					'expected' => 1 }
+				},
+				
 	},{ 	'func' => \&VCS::System::time_to_str,
 		'comment' => 'System / time_to_str',
 		'tester' => \&test_line,
 		'debug' => 0,
-		'test' => { 	1 => { 'args' => [ '', 56589 ], 'expected' => '15:43' }, 
-				2 => { 'args' => [ '', 75236 ], 'expected' => '20:53' } },
+		'test' => { 	1 => {
+					'args' => [ '', 56589 ],
+					'expected' => '15:43' }, 
+				2 => {
+					'args' => [ '', 75236 ],
+					'expected' => '20:53' }
+				},
+				
 	},{ 	'func' => \&VCS::System::str_to_time,
 		'comment' => 'System / str_to_time',
 		'tester' => \&test_line,
 		'debug' => 0,
-		'test' => { 	1 => { 'args' => [ '', '15:43' ], 'expected' => 56580 }, 
-				2 => { 'args' => [ '', '20:53' ], 'expected' => 75180 } },
+		'test' => { 	1 => {
+					'args' => [ '', '15:43' ],
+					'expected' => 56580 }, 
+				2 => {
+					'args' => [ '', '20:53' ],
+					'expected' => 75180 }
+				},
+				
 	},{ 	'func' => \&VCS::System::appnum_to_str,
 		'comment' => 'System / appnum_to_str',
 		'tester' => \&test_line,
 		'debug' => 0,
-		'test' => { 	1 => { 'args' => [ '', '039201601250001' ], 'expected' => '039/2016/01/25/0001' }, 
-				2 => { 'args' => [ '', '059201502530002' ], 'expected' => '059/2015/02/53/0002' } },
+		'test' => { 	1 => {
+					'args' => [ '', '039201601250001' ],
+					'expected' => '039/2016/01/25/0001' }, 
+				2 => {
+					'args' => [ '', '059201502530002' ],
+					'expected' => '059/2015/02/53/0002' }
+				},
+				
 	},{ 	'func' => \&VCS::System::dognum_to_str,
 		'comment' => 'System / dognum_to_str',
 		'tester' => \&test_line,
 		'debug' => 0,
-		'test' => { 	1 => { 'args' => [ '', '29000001123015' ], 'expected' => '29.000001.123015' }, 
-				2 => { 'args' => [ '', '01000002123015' ], 'expected' => '01.000002.123015' } },
+		'test' => { 	1 => {
+					'args' => [ '', '29000001123015' ],
+					'expected' => '29.000001.123015' }, 
+				2 => {
+					'args' => [ '', '01000002123015' ],
+					'expected' => '01.000002.123015' }
+				},
+				
 	},{ 	'func' => \&VCS::System::converttext,
 		'comment' => 'System / converttext',
 		'tester' => \&test_line,
 		'debug' => 0,
-		'test' => { 	1 => { 'args' => [ '', 'A"B^C<D>E&F' ], 'expected' => 'A&quot;B^C&lt;D&gt;E&F' }, 
-				2 => { 'args' => [ '', 'A"B^C<D>E&F', 1 ], 'expected' => 'A&quot;B^C&lt;D&gt;E&amp;F' } },
+		'test' => { 	1 => {
+					'args' => [ '', 'A"B^C<D>E&F' ],
+					'expected' => 'A&quot;B^C&lt;D&gt;E&F' }, 
+				2 => {
+					'args' => [ '', 'A"B^C<D>E&F', 1 ],
+					'expected' => 'A&quot;B^C&lt;D&gt;E&amp;F' }
+				},
+				
 	},{ 	'func' => \&VCS::System::showHref,
 		'comment' => 'System / showHref',
 		'tester' => \&test_line_substr,
 		'debug' => 0,
-		'test' => { 	1 => { 'args' => [ '', $vars, {1 => 'aa', 2 => 'bb'} ], 'expected' => '/?1=aa&2=bb' }, 
-				2 => { 'args' => [ '', $vars, {1 => 'aa', 2 => 'bb'}, 1 ], 'expected' => 'http://' } },
+		'test' => { 	1 => {
+					'args' => [ '', $vars, {1 => 'aa', 2 => 'bb'} ],
+					'expected' => '/?1=aa&2=bb' }, 
+				2 => {
+					'args' => [ '', $vars, {1 => 'aa', 2 => 'bb'}, 1 ],
+					'expected' => 'http://' }
+				},
+				
 	},{ 	'func' => \&VCS::System::showForm,
 		'comment' => 'System / showForm',
 		'tester' => \&test_line,
 		'debug' => 0,
-		'test' => { 	1 => { 	'args' => [ '', $vars, {1 => 'aa', 2 => 'bb'}, 0, 'name', 1 ], 
+		'test' => { 	1 => { 	
+					'args' => [ '', $vars, {1 => 'aa', 2 => 'bb'}, 0, 'name', 1 ], 
 					'expected' => 	'<form action="/" method="POST" name="name" target="1">'.
 							'<input type="hidden" name="1" value="aa"><input type="hidden" '.
 							'name="2" value="bb">' }, 
-				2 => { 	'args' => [ '', $vars, {1 => 'aa', 2 => 'bb'}, 1 ], 
+				2 => { 	
+					'args' => [ '', $vars, {1 => 'aa', 2 => 'bb'}, 1 ], 
 					'expected' => 	'<form action="/" method="POST" enctype="multipart/form-data">'.
 							'<input type="hidden" name="1" value="aa"><input type="hidden" '.
 							'name="2" value="bb">' }, },
@@ -1850,48 +2202,70 @@ sub modultest
 		'comment' => 'System / check_mail_address',
 		'tester' => \&test_line,
 		'debug' => 0,
-		'test' => { 	1 => { 'args' => [ '', 'email_email.com' ], 'expected' => 0 }, 
-				2 => { 'args' => [ '', 'email@email' ], 'expected' => 0 },
-				3 => { 'args' => [ '', 'email@email.com' ], 'expected' => 1 },
-				4 => { 'args' => [ '', 'email@em*ail.com' ], 'expected' => 0 }	},
+		'test' => { 	1 => {
+					'args' => [ '', 'email_email.com' ], 
+					'expected' => 0 }, 
+				2 => {
+					'args' => [ '', 'email@email' ],
+					'expected' => 0 },
+				3 => {
+					'args' => [ '', 'email@email.com' ],
+					'expected' => 1 },
+				4 => {
+					'args' => [ '', 'email@em*ail.com' ],
+					'expected' => 0 }
+				},
+				
 	},{ 	'func' => \&VCS::System::get_pages,
 		'comment' => 'System / get_pages',
 		'tester' => \&test_hash,
 		'debug' => 0,
-		'test' => { 	1 => { 	'args' => [ '', $vars, 'cms', 'location', 'SELECT Count(*) FROM Users', ['param'] ], 
+		'test' => { 	1 => { 	
+					'args' => [ '', $vars, 'cms', 'location', 'SELECT Count(*) FROM Users', ['param'] ], 
 					'expected' => [ 'position', 'show', 'pages' ] }, 
 				},
+				
 	},{ 	'func' => \&VCS::AdminFunc::calculateCouncilFee,
 		'comment' => 'AdminFunc / calculateCouncilFee',
 		'tester' => \&test_line,
 		'debug' => 0,
-		'test' => { 	1 => { 	'args' => [ $vars_for_admfnc, $vars, 0, '01.01.1980', '24.10.2015', 0, 0, 313, 13], 
+		'test' => { 	1 => { 	
+					'args' => [ $vars_for_admfnc, $vars, 0, '01.01.1980', '24.10.2015', 0, 0, 313, 13], 
 					'expected' => '3500.00' }, 
-				2 => { 	'args' => [ $vars_for_admfnc, $vars, 0, '01.01.1980', '24.10.2015', 1, 0, 313, 13], 
+				2 => { 	
+					'args' => [ $vars_for_admfnc, $vars, 0, '01.01.1980', '24.10.2015', 1, 0, 313, 13], 
 					'expected' => '7000.00' }, 
-				3 => { 	'args' => [ $vars_for_admfnc, $vars, 0, '01.01.1980', '24.10.2015', 0, 1, 313, 13], 
+				3 => {
+					'args' => [ $vars_for_admfnc, $vars, 0, '01.01.1980', '24.10.2015', 0, 1, 313, 13], 
 					'expected' => '0' }, 
-				4 => { 	'args' => [ $vars_for_admfnc, $vars, 0, '01.01.2013', '24.10.2015', 0, 1, 313, 13], 
+				4 => { 
+					'args' => [ $vars_for_admfnc, $vars, 0, '01.01.2013', '24.10.2015', 0, 1, 313, 13], 
 					'expected' => '0' },
 				},
+				
 	},{ 	'func' => \&VCS::AdminFunc::getPricesByAge,
 		'comment' => 'AdminFunc / getPricesByAge',
 		'tester' => \&test_hash,
 		'debug' => 0,
-		'test' => { 	1 => { 	'args' => [ $vars_for_admfnc, $vars, 313, 1, '24.10.2015', 30 ], 
+		'test' => { 	1 => { 	
+					'args' => [ $vars_for_admfnc, $vars, 313, 1, '24.10.2015', 30 ], 
 					'expected' => [ 'oconcilnu_6-12', 'age_suffix', 'visa_6-12' ] }, 
-				2 => { 	'args' => [ $vars_for_admfnc, $vars, 313, 13, '24.10.2015', 5 ], 
+				2 => { 	
+					'args' => [ $vars_for_admfnc, $vars, 313, 13, '24.10.2015', 5 ], 
 					'expected' => [ 'jurgent_6-12', 'age_suffix', 'oconcilru_6-12' ] },
 				},
 	},{ 	'func' => \&VCS::AdminFunc::CalculateConcilFeeByAgreementApplicant,
 		'comment' => 'AdminFunc / CalculateConcilFeeByAgreementApplicant',
 		'tester' => \&test_line,
 		'debug' => 0,
-		'test' => { 	1 => { 	'args' => [ $vars_for_admfnc, $vars, '1815982' ], 
+		'test' => { 	1 => { 	
+					'args' => [ $vars_for_admfnc, $vars, '1815982' ], 
 					'expected' => '2787.38' },
-				2 => { 	'args' => [ $vars_for_admfnc, $vars, '1815821' ], 
+				2 => { 	
+					'args' => [ $vars_for_admfnc, $vars, '1815821' ], 
 					'expected' => '2651.15' },  
-				3 => { 	'args' => [ $vars_for_admfnc, $vars, '1815978' ], 
+				3 => { 	
+					'args' => [ $vars_for_admfnc, $vars, '1815978' ], 
 					'expected' => '2716.11' }, 
 				},
 	},
@@ -2555,155 +2929,201 @@ sub settings_default
 	
 	my $db_connect = VCS::Config->getConfig();
 
-	my $r = $vars->db->query('CREATE TABLE Autotest (ID INT NOT NULL AUTO_INCREMENT, '.
-			'Test VARCHAR(6), Param VARCHAR(50), Value VARCHAR(256), PRIMARY KEY (ID))', {});
+	my $r = $vars->db->query("
+			CREATE TABLE Autotest (ID INT NOT NULL AUTO_INCREMENT
+			Test VARCHAR(6), Param VARCHAR(50), Value VARCHAR(256), PRIMARY KEY (ID))", {});
 	
 	# TT	
 	for (@$tt_adr_default) {
-		my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) '.
-			'VALUES (?,?,?)', {}, 'test9', 'page_adr', $_); };
+		my $r = $vars->db->query("
+			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)", 
+			{}, 'test9', 'page_adr', $_); };
 	
-	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
-			'test9', 'settings_test_ref', 1);
-	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
-			'test9', 'settings_test_404', 1);
+	my $r = $vars->db->query("
+			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+			{}, 'test9', 'settings_test_ref', 1);
+	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', 
+			{}, 'test9', 'settings_test_404', 1);
 	
 	# TS
 	
 	for (@$ts_centers) {
-		my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) '.
-			'VALUES (?,?,?)', {}, 'test1', 'centers', $_); };
+		my $r = $vars->db->query("
+			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+			{}, 'test1', 'centers', $_); };
 			
-	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
-			'test1', 'settings_test_null', 1);
-	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
-			'test1', 'settings_test_error', 1);
-	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
-			'test1', 'day_slots_test', 10);
-	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
-			'test1', 'far_far_day', 1);
+	my $r = $vars->db->query("
+			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+			{}, 'test1', 'settings_test_null', 1);
+	my $r = $vars->db->query("
+			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+			{}, 'test1', 'settings_test_error', 1);
+	my $r = $vars->db->query("
+			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+			{}, 'test1', 'day_slots_test', 10);
+	my $r = $vars->db->query("
+			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+			{}, 'test1', 'far_far_day', 1);
 	
 	# SQL
 	
-	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
-			'test7', 'settings_test_select', 1);
-	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
-			'test7', 'settings_test_insert', 1);
-	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
-			'test7', 'settings_test_update', 1);
+	my $r = $vars->db->query("
+			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+			{}, 'test7', 'settings_test_select', 1);
+	my $r = $vars->db->query("
+			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+			{}, 'test7', 'settings_test_insert', 1);
+	my $r = $vars->db->query("
+			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+			{}, 'test7', 'settings_test_update', 1);
 	
 	# MT
 	for (@$modul_tests) {
-		my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) '.
-			'VALUES (?,?,?)', {}, 'test5', $_, 1); };
+		my $r = $vars->db->query("
+			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+			{}, 'test5', $_, 1); };
 	
 	# UP
-	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
-			'test11', 'settings_test_oldlist', 1);
-	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
-			'test11', 'settings_test_difeuro', 1);
-	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
-			'test11', 'settings_test_difper', 5);
-	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
-			'test11', 'settings_test_difday', 0);
+	my $r = $vars->db->query("
+			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+			{}, 'test11', 'settings_test_oldlist', 1);
+	my $r = $vars->db->query("
+			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+			{}, 'test11', 'settings_test_difeuro', 1);
+	my $r = $vars->db->query("
+			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+			{}, 'test11', 'settings_test_difper', 5);
+	my $r = $vars->db->query("
+			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+			{}, 'test11', 'settings_test_difday', 0);
 	
 	# SY
 	
-	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
-			'test10', 'settings_perlc', 1);
+	my $r = $vars->db->query("
+			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+			{}, 'test10', 'settings_perlc', 1);
 	
 	# TR
 	
-	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
-			'test6', 'settings_rb_langreq', 1);
-	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
-			'test6', 'settings_rb_comm', 1);
-	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
-			'test6', 'settings_dict_langreq', 1);
-	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
-			'test6', 'settings_dict_getLangVar', 1);
+	my $r = $vars->db->query("
+			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+			{}, 'test6', 'settings_rb_langreq', 1);
+	my $r = $vars->db->query("
+			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+			{}, 'test6', 'settings_rb_comm', 1);
+	my $r = $vars->db->query("
+			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+			{}, 'test6', 'settings_dict_langreq', 1);
+	my $r = $vars->db->query("
+			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+			{}, 'test6', 'settings_dict_getLangVar', 1);
 	
 	# RP
 	
 	for (@$report_name) {
-		my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) '.
-			'VALUES (?,?,?)', {}, 'test4', $_, 1); };
+		my $r = $vars->db->query("
+			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+			{}, 'test4', $_, 1);
+			};
 	
-	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
-			'test4', 'settings_format_pdf', 1);
-	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
-			'test4', 'settings_format_zip', 1);
-	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
-			'test4', 'settings_format_xml', 1);
+	my $r = $vars->db->query("
+			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+			{}, 'test4', 'settings_format_pdf', 1);
+	my $r = $vars->db->query("
+			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+			{}, 'test4', 'settings_format_zip', 1);
+	my $r = $vars->db->query("
+			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+			{}, 'test4', 'settings_format_xml', 1);
 	
 	# AA
 	
 	for my $test ( keys %$test_addapp ) {
 		for my $param ( keys %{$test_addapp->{$test}} ) {
-			my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) '.
-				'VALUES (?,?,?)', {}, 'test3', $test.':'.$param, $test_addapp->{$test}->{$param} ); 
+			my $r = $vars->db->query("
+				INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+				{}, 'test3', $test.':'.$param, $test_addapp->{$test}->{$param} ); 
 			}; 
-		my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) '.
-				'VALUES (?,?,?)', {}, 'test3', 'settings_collect_name_'.$test, 'встроенный набор параметров '.$test ); 
+		my $r = $vars->db->query("
+				INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+				{}, 'test3', 'settings_collect_name_'.$test, 'встроенный набор параметров '.$test ); 
 		};
 	
-	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
-			'test3', 'settings_collect_num', scalar(keys %$test_addapp));
-	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
-			'test3', 'settings_autodate', 1);
-	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
-			'test3', 'settings_fixdate', '');
+	my $r = $vars->db->query("
+			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+			{}, 'test3', 'settings_collect_num', scalar(keys %$test_addapp));
+	my $r = $vars->db->query("
+			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+			{}, 'test3', 'settings_autodate', 1);
+	my $r = $vars->db->query("
+			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+			{}, 'test3', 'settings_fixdate', '');
 	
 	# SF
 	
 	for my $test ( keys %$test_short_form_step1 ) {
 		for my $param ( keys %{$test_short_form_step1->{$test}} ) {
-			my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) '.
-				'VALUES (?,?,?)', {}, 'test2A', $test.':'.$param, $test_short_form_step1->{$test}->{$param} ); 
+			my $r = $vars->db->query("
+				INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+				{}, 'test2A', $test.':'.$param, $test_short_form_step1->{$test}->{$param} ); 
 			}; 
-		my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) '.
-				'VALUES (?,?,?)', {}, 'test2', 'settings_collect_name_'.$test, 'встроенный набор параметров '.$test ); 
+		my $r = $vars->db->query("
+				INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+				{}, 'test2', 'settings_collect_name_'.$test, 'встроенный набор параметров '.$test ); 
 		};
 
 	for my $test ( keys %$test_short_form_step2 ) {
 		for my $param ( keys %{$test_short_form_step2->{$test}} ) {
-			my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) '.
-				'VALUES (?,?,?)', {}, 'test2B', $test.':'.$param, $test_short_form_step2->{$test}->{$param} ); 
+			my $r = $vars->db->query("
+				INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+				{}, 'test2B', $test.':'.$param, $test_short_form_step2->{$test}->{$param} ); 
 			};  
 		};
 	
-	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
-			'test2', 'settings_collect_num', scalar(keys %$test_short_form_step1));
-	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
-			'test2', 'settings_autodate', 1);
-	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
-			'test2', 'settings_appdate', '');
-	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
-			'test2', 'settings_fixdate_s', '');
-	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
-			'test2', 'settings_fixdate_e', '');
+	my $r = $vars->db->query("
+			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+			{}, 'test2', 'settings_collect_num', scalar(keys %$test_short_form_step1));
+	my $r = $vars->db->query("
+			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+			{}, 'test2', 'settings_autodate', 1);
+	my $r = $vars->db->query("
+			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+			{}, 'test2', 'settings_appdate', '');
+	my $r = $vars->db->query("
+			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+			{}, 'test2', 'settings_fixdate_s', '');
+	my $r = $vars->db->query("
+			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+			{}, 'test2', 'settings_fixdate_e', '');
 	
 	# TC
 	for my $test ( keys %$test_contract ) {
 		for my $param ( keys %{$test_contract->{$test}} ) {
-			my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) '.
-				'VALUES (?,?,?)', {}, 'test8', $test.':'.$param, $test_contract->{$test}->{$param} ); 
+			my $r = $vars->db->query("
+				INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+				{}, 'test8', $test.':'.$param, $test_contract->{$test}->{$param} ); 
 			};  
 		
-		my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) '.
-				'VALUES (?,?,?)', {}, 'test8', 'settings_collect_name_'.$test, 'встроенный набор параметров '.$test ); 
+		my $r = $vars->db->query("
+				INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+				{}, 'test8', 'settings_collect_name_'.$test, 'встроенный набор параметров '.$test ); 
 		};
 	
-	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
-			'test8', 'settings_collect_num', scalar(keys %$test_contract));
-	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
-			'test8', 'settings_fixdate_s', '');
-	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
-			'test8', 'settings_fixdate_e', '');
-	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
-			'test8', 'settings_concildate', '');
-	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', {},
-			'test8', 'settings_autodate', 1);
+	my $r = $vars->db->query("
+			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+			{}, 'test8', 'settings_collect_num', scalar(keys %$test_contract));
+	my $r = $vars->db->query("
+			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+			{}, 'test8', 'settings_fixdate_s', '');
+	my $r = $vars->db->query("
+			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+			{}, 'test8', 'settings_fixdate_e', '');
+	my $r = $vars->db->query("
+			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+			{}, 'test8', 'settings_concildate', '');
+	my $r = $vars->db->query("
+			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+			{}, 'test8', 'settings_autodate', 1);
 			
 	return 1;	
 	}
