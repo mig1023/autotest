@@ -46,7 +46,7 @@ sub getContent
     		'settings_chng' => \&settings_chng,
     		'collect_chng' => \&collect_chng,
     		'collect_add' => \&collect_add,
-    		};
+    	};
     	
     	my $disp_link = $dispathcher->{$id};
     	$vars->get_system->redirect($vars->getform('fullhost').'/admin/login.htm')
@@ -82,7 +82,7 @@ sub autotest
 		$first_time_alert = "alert('Модуль самотестирования запущен впервые, подключена новая БД или ".
 				"данные настроек были утеряны.\\nВ текущей БД " . $db_name . " создана таблица ".
 				"Autotest с настройками по умолчанию.');";
-		};
+	};
 		
 	my $id_from_docpack = $vars->db->sel1("select ID from DocPack where PassNum = '101010AUTOTEST'");
 	my $id_from_docpack_list = $vars->db->sel1("select ID from DocPackList where PassNum = '0909AUTOTEST'");
@@ -100,31 +100,33 @@ sub autotest
 			"быть результатом прекращения работы модуля во время тестирования. ".
 			"Они будут удалены в процессе полной проверки, но это может исказить результаты ".
 			"первой предстоящей проверки. На последующих проверках это не скажется.');";
-		};
+	};
 	
 	# TT
 	
-	my $tt_adr_hash = $vars->db->selall("SELECT Value FROM Autotest WHERE Test = ? AND Param = ?", 
-						'test9', 'page_adr');
+	my $tt_adr_hash = $vars->db->selall("
+		SELECT Value FROM Autotest WHERE Test = ? AND Param = ?", 'test9', 'page_adr');
 	my $tt_adr = '';
 	for my $hash_addr (@$tt_adr_hash) {
 		my ($adr) = @$hash_addr;
-		$tt_adr .= "'".$adr."', "; }	
+		$tt_adr .= "'".$adr."', "; 
+	}	
 
 	($did, my $settings_test9_ref) = get_settings($vars, 'test9', 'settings_test_ref');
 	($did, my $settings_test9_404) = get_settings($vars, 'test9', 'settings_test_404');
 	
 	# TS
 	
-	my $centers_hash = $vars->db->selall("SELECT Value FROM Autotest WHERE Test = ? AND Param = ?", 
-						'test1', 'centers');
+	my $centers_hash = $vars->db->selall("
+		SELECT Value FROM Autotest WHERE Test = ? AND Param = ?", 'test1', 'centers');
 	my $centers = '';
 	my $centers_names = '';
 	
 	for my $hash_addr (@$centers_hash) {
 		my ($cnt) = @$hash_addr;
 		$centers .= $cnt.", ";
-		$centers_names .= "'".get_center_name($vars, $cnt)."', "; }	
+		$centers_names .= "'".get_center_name($vars, $cnt)."', "; 
+	}	
 	
 	($did, my $settings_test1_null) = get_settings($vars, 'test1', 'settings_test_null');
 	($did, my $settings_test1_error) = get_settings($vars, 'test1', 'settings_test_error');
@@ -141,7 +143,8 @@ sub autotest
 	
 	for my $rep_en (@$repen_hash) {
 		my ($rep_en2) = @$rep_en;
-		$report_enabled .= ($rep_en2 ? "1" : "0").", "; }
+		$report_enabled .= ($rep_en2 ? "1" : "0").", "; 
+	}
 	
 	($did, my $settings_test4_xml) = get_settings($vars, 'test4', 'settings_format_xml');
 	($did, my $settings_test4_pdf) = get_settings($vars, 'test4', 'settings_format_pdf');
@@ -157,7 +160,8 @@ sub autotest
 	($did, my $settings_fixdate) = get_settings($vars, 'test3', 'settings_fixdate');
 	
 	if ($settings_fixdate) {
-		($settings_fixdate, $settings_fixdate_num) = fix_dates_str($settings_fixdate); };
+		($settings_fixdate, $settings_fixdate_num) = fix_dates_str($settings_fixdate); 
+	};
 	
 	for (1..$settings_collect3_num) {
 		$test3_collection .= "'";
@@ -168,10 +172,11 @@ sub autotest
 		
 		for my $coll_pair (@$coll_hash) {
 			$coll_pair->{Param} =~ s/^[^:]+?://;
-			$test3_collection .= '&' . $coll_pair->{Param} . '=' . $coll_pair->{Value}; }	
+			$test3_collection .= '&' . $coll_pair->{Param} . '=' . $coll_pair->{Value}; 
+		}	
 		
 		$test3_collection .= "', ";
-		}
+	}
 	
 	# SF
 	
@@ -192,7 +197,8 @@ sub autotest
 		
 		for my $coll_pair (@$coll_hash) {
 			$coll_pair->{Param} =~ s/^[^:]+?://;
-			$test2A_collection .= '&' . $coll_pair->{Param} . '=' . $coll_pair->{Value}; }	
+			$test2A_collection .= '&' . $coll_pair->{Param} . '=' . $coll_pair->{Value}; 
+		}	
 		
 		$coll_hash = $vars->db->selallkeys("
 			SELECT Param, Value FROM Autotest WHERE Test = ? AND Param LIKE ?", 
@@ -200,11 +206,12 @@ sub autotest
 		
 		for my $coll_pair (@$coll_hash) {
 			$coll_pair->{Param} =~ s/^[^:]+?://;
-			$test2B_collection .= '&' . $coll_pair->{Param} . '=' . $coll_pair->{Value}; }	
+			$test2B_collection .= '&' . $coll_pair->{Param} . '=' . $coll_pair->{Value}; 
+		}	
 		
 		$test2A_collection .= "', ";
 		$test2B_collection .= "', ";
-		}
+	}
 
 	($did, my $settings_test2_autodate) = get_settings($vars, 'test2', 'settings_autodate');
 	($did, my $settings_test2_appdate) = get_settings($vars, 'test2', 'settings_appdate');
@@ -214,7 +221,8 @@ sub autotest
 	if ($settings_test2_fixdate_s) {
 		($settings_test2_fixdate_s, $settings_test2_fixdate_num) = fix_dates_str($settings_test2_fixdate_s);
 		($settings_test2_fixdate_e, $settings_test2_fixdate_num) = fix_dates_str($settings_test2_fixdate_e);
-		($settings_test2_appdate, $settings_test2_appdate_num) = fix_dates_str($settings_test2_appdate); };
+		($settings_test2_appdate, $settings_test2_appdate_num) = fix_dates_str($settings_test2_appdate); 
+	};
 
 	# TC
 	
@@ -231,7 +239,8 @@ sub autotest
 	if ($settings_test8_fixdate_s) {
 		($settings_test8_fixdate_s, $settings_test8_fixdate_num) = fix_dates_str($settings_test8_fixdate_s);
 		($settings_test8_fixdate_e, $settings_test8_fixdate_num) = fix_dates_str($settings_test8_fixdate_e); 
-		($settings_test8_concildate, $settings_test8_concildate_num) = fix_dates_str($settings_test8_concildate); }
+		($settings_test8_concildate, $settings_test8_concildate_num) = fix_dates_str($settings_test8_concildate); 
+	}
 	
 	for (1..$settings_collect8_num) {
 		$test8_collection .= "'";
@@ -242,10 +251,11 @@ sub autotest
 		
 		for my $coll_pair (@$coll_hash) {
 			$coll_pair->{Param} =~ s/^[^:]+?://;
-			$test8_collection .= '&' . $coll_pair->{Param} . '=' . $coll_pair->{Value}; }	
+			$test8_collection .= '&' . $coll_pair->{Param} . '=' . $coll_pair->{Value}; 
+		}	
 		
 		$test8_collection .= "', ";
-		}
+	}
 	
 
 	$vars->get_system->pheader($vars);
@@ -343,8 +353,8 @@ sub settings
 				'<input type="button" id="settings_'.$id.'" value="удалить" '.
 				'onclick="location.pathname='."'".'/autotest/settings_del.htm?did='.$id.
 				'&ret=TT'."'".'">&nbsp;'.$adr.'<br><br>';
-			}	
-		}
+		}	
+	}
 	
 	if ($edit eq 'TS') {
 		$title_add = 'Проверка временных интервалов';
@@ -376,8 +386,8 @@ sub settings
 				'<input type="button" id="settings_'.$id.'" value="удалить" '.
 				'onclick="location.pathname='."'".'/autotest/settings_del.htm?did='.$id.
 				'&ret=TS'."'".'">&nbsp;'.$cnt.'&nbsp;('.$bname.')<br><br>'; 
-			}	
-		}
+		}	
+	}
 		
 	if ($edit eq 'SQL') {
 		$title_add = 'Проверка SQL-запросов';
@@ -389,7 +399,7 @@ sub settings
 		$settings .= settings_form_bool($id, 'проверять INSERT-запросы', $value, 'SQL');
 		($id, $value) = get_settings($vars, 'test7', 'settings_test_update');
 		$settings .= settings_form_bool($id, 'проверять UPDATE-запросы', $value, 'SQL');
-		}
+	}
 		
 	if ($edit eq 'MT') {
 		$title_add = 'Модульные тесты';
@@ -402,8 +412,8 @@ sub settings
 			my ($nn_id, $modul_name) = @$modul;
 			my ($id, $value) = get_settings($vars, 'test5', $modul_name);
 			$settings .= settings_form_bool($id, $modul_name, $value, 'MT');
-			}	
-		}
+		}	
+	}
 		
 	if ($edit eq 'UP') {
 		$title_add = 'Проверка состояний';
@@ -422,7 +432,7 @@ sub settings
 		$settings .= '<b>количество дней актуальности прайса</b><br><br>';
 		($id, $value) = get_settings($vars, 'test11', 'settings_test_difday');
 		$settings .= settings_form_str_chng('изменить', $id, $value,  'UP');
-		}
+	}
 		
 	if ($edit eq 'SY') {
 		$title_add = 'Проверка синтаксиса';
@@ -431,7 +441,7 @@ sub settings
 
 		my ($id, $value) = get_settings($vars, 'test10', 'settings_perlc');
 		$settings .= settings_form_bool($id, 'проверять с помощью perl -c', $value, 'SY');
-		}
+	}
 	
 	if ($edit eq 'TR') {
 		$title_add = 'Проверка перевода';
@@ -450,7 +460,7 @@ sub settings
 		$settings .= settings_form_bool($id, 'для langreq', $value, 'TR');
 		($id, $value) = get_settings($vars, 'test6', 'settings_dict_getLangVar');
 		$settings .= settings_form_bool($id, 'для getLangVar', $value, 'TR');
-		}
+	}
 		
 	if ($edit eq 'RP') {
 		$title_add = 'Доступность отчётов';
@@ -475,8 +485,8 @@ sub settings
 			my ($nn_id, $report_name) = @$report;
 			my ($id, $value) = get_settings($vars, 'test4', $report_name);
 			$settings .= settings_form_bool($id, $report_name, $value, 'RP');
-			}	
-		}
+		}	
+	}
 	
 	if ($edit eq 'AA') {
 		$title_add = 'Доступность записи (add app)';
@@ -508,8 +518,8 @@ sub settings
 				($did, my $settings_collect_name) = get_settings($vars, 'test3', 
 					'settings_collect_name_'.$_);
 				$settings .= settings_form_collect('AA', $_, $settings_collect_name);
-				}
 			}
+		}
 			
 		elsif ($collect and !$del and !$add) {
 			my ($did, $settings_collect_name) = get_settings($vars, 'test3', 
@@ -525,7 +535,7 @@ sub settings
 			
 			$settings .= settings_full_collect($vars, 'test3', $collect);
 			$settings .= settings_form_add_into_collect ($collect, 'test3', 'AA')
-			}
+		}
 			
 		elsif ($collect and $del) {
 			my $r = $vars->db->query("DELETE FROM Autotest WHERE Test = ? AND Param LIKE ?", {},
@@ -551,14 +561,14 @@ sub settings
 					$r = $vars->db->query("
 						UPDATE Autotest SET Param = ? WHERE ID = ?", {},
 						'settings_collect_name_'.$new_index, $did);						
-					}
 				}
+			}
 			
 			$value--;
 			$r = $vars->db->query('UPDATE Autotest SET Value = ? WHERE test = ? and Param = ?', {},
 				$value, 'test3', 'settings_collect_num');
 			$vars->get_system->redirect($vars->getform('fullhost').'/autotest/settings.htm?edit=AA');
-			}
+		}
 		elsif ($add) {
 			my ($did, $new_index) = get_settings($vars, 'test3', 'settings_collect_num');		
 			$new_index++;
@@ -578,8 +588,8 @@ sub settings
 				
 			$vars->get_system->redirect($vars->getform('fullhost').
 				'/autotest/settings.htm?edit=AA&collect='.$new_index);
-			}
 		}
+	}
 	
 	if ($edit eq 'SF') {
 		$title_add = 'Доступность записи (short form)';
@@ -621,8 +631,9 @@ sub settings
 			for (1..$settings_collect2_num) {
 				($did, my $settings_collect_name) = get_settings($vars, 'test2', 
 					'settings_collect_name_'.$_);
-				$settings .= settings_form_collect('SF', $_, $settings_collect_name); }
+				$settings .= settings_form_collect('SF', $_, $settings_collect_name); 
 			}
+		}
 			
 		elsif ($collect and !$del and !$add) {
 			my ($did, $settings_collect_name) = get_settings($vars, 'test2', 
@@ -652,7 +663,7 @@ sub settings
 					
 			$settings .= settings_full_collect($vars, 'test2B', $collect);
 			$settings .= settings_form_add_into_collect ($collect, 'test2B', 'SF');
-			}
+		}
 
 		elsif ($collect and $del) {
 			my $r = $vars->db->query("
@@ -675,14 +686,14 @@ sub settings
 							UPDATE Autotest SET Param = ? WHERE ID = ?", 
 							{}, $new_index.':'.$coll_pair->{Param}, 
 							$coll_pair->{ID});
-						}
+					}
 					($did, my $name_col) = get_settings($vars, 'test2', 
 						'settings_collect_name_'.$col_renum);
 					$r = $vars->db->query("
 						UPDATE Autotest SET Param = ? WHERE ID = ?", {},
 						'settings_collect_name_'.$new_index, $did);
-					}
 				}
+			}
 			
 			$value--;
 			$r = $vars->db->query("
@@ -690,7 +701,7 @@ sub settings
 				$value, 'test2', 'settings_collect_num');
 				
 			$vars->get_system->redirect($vars->getform('fullhost').'/autotest/settings.htm?edit=SF');
-			}
+		}
 		elsif ($add) {
 			my ($did, $new_index) = get_settings($vars, 'test2', 'settings_collect_num');		
 			$new_index++;
@@ -716,8 +727,8 @@ sub settings
 				
 			$vars->get_system->redirect($vars->getform('fullhost').
 				'/autotest/settings.htm?edit=SF&collect='.$new_index);
-			}
 		}
+	}
 		
 	if ($edit eq 'TC') {
 		$title_add = 'Доступность создания договора';
@@ -760,8 +771,9 @@ sub settings
 			for (1..$settings_collect8_num) {
 				($did, my $settings_collect_name) = get_settings($vars, 'test8', 
 					'settings_collect_name_'.$_);
-				$settings .= settings_form_collect('TC', $_, $settings_collect_name); }
+				$settings .= settings_form_collect('TC', $_, $settings_collect_name); 
 			}
+		}
 			
 		elsif ($collect and !$del and !$add) {
 			my ($did, $settings_collect_name) = get_settings($vars, 'test8', 
@@ -780,7 +792,7 @@ sub settings
 			
 			$settings .= settings_full_collect($vars, 'test8', $collect);
 			$settings .= settings_form_add_into_collect ($collect, 'test8', 'TC');
-			}
+		}
 
 		elsif ($collect and $del) {
 			my $r = $vars->db->query("
@@ -804,21 +816,21 @@ sub settings
 						$r = $vars->db->query("
 							UPDATE Autotest SET Param = ? WHERE ID = ?",
 							{}, $new_index.':'.$coll_pair->{Param},	$coll_pair->{ID});
-						}
+					}
 					($did, my $name_col) = get_settings($vars, 'test8', 
 						'settings_collect_name_'.$col_renum);
 					$r = $vars->db->query("
 						UPDATE Autotest SET Param = ? WHERE ID = ?", {},
 						'settings_collect_name_'.$new_index, $did);
-					}
 				}
+			}
 			
 			$value--;
 			$r = $vars->db->query("
 				UPDATE Autotest SET Value = ? WHERE test = ? and Param = ?", {},
 				$value, 'test8', 'settings_collect_num');
 			$vars->get_system->redirect($vars->getform('fullhost').'/autotest/settings.htm?edit=TC');
-			}
+		}
 		elsif ($add) {
 			my ($did, $new_index) = get_settings($vars, 'test8', 'settings_collect_num');		
 			$new_index++;
@@ -835,8 +847,8 @@ sub settings
 				
 			$vars->get_system->redirect($vars->getform('fullhost').
 				'/autotest/settings.htm?edit=TC&collect='.$new_index);
-			}
 		}
+	}
 		
 	$vars->get_system->pheader($vars);
 	my $tvars = {
@@ -941,7 +953,7 @@ sub collect_chng
 		$err = $vars->db->query("
 			UPDATE Autotest SET Param = ?, Value = ? WHERE ID = ?",
 			{}, $collect.':'.$param_name, $param_value, $param_id);
-		}
+	}
 		
 	$vars->get_system->redirect($vars->getform('fullhost').'/autotest/settings.htm?edit='.$ret);
 }
@@ -1212,14 +1224,14 @@ sub search_all_folder
 	chomp $_;
 	return if $_ eq '.' or $_ eq '..';
 	read_files($_) if (-f);
-	}
+}
 
 sub read_files
 # //////////////////////////////////////////////////
 {
 	my $filename = shift;
 	
-	if ((($filename =~ /\.pm$/i) or ($filename =~ /\.tt2$/i))
+	if ( (($filename =~ /\.pm$/i) or ($filename =~ /\.tt2$/i))
 			and (!($filename =~ /^config/i))
 			and (!($filename =~ /^resources\.pm$/i)) ) {
 		
@@ -1234,7 +1246,8 @@ sub read_files
 					and (!/(langreq|getLangSesVar|getGLangVar|getLangVar)/i) 
 					and (!$rb_comm or !/#/) ) {  
 						$ch++;
-					} }
+				} 
+			}
 					
 			if ($dict_langreq) {
 				if ($str =~ /langreq\s?\(\s?\'([^\']+)\'\s?\)/i) {
@@ -1242,7 +1255,10 @@ sub read_files
 						unless (exists($voc_cont->{$1})) { 
 							$voc_cont->{$1} = '1';
 							$ch2++;
-					} } } }
+						} 
+					} 
+				} 
+			}
 				
 			if ($dict_getLangVar) {
 				if ($str =~ /getLangVar\s?\(\s?\'([^\']+)\'\s?\)/i) {
@@ -1250,18 +1266,20 @@ sub read_files
 						unless (exists($voc_cont->{$1})) {
 							$voc_cont->{$1} = '1';
 							$ch2++;
-					} } } }
-
+						} 
+					} 
+				} 
+			}
 				
-				}
+		}
 		close $file_tmp;
 		print '\\n'.$filename." (" if $ch or $ch2;
 		print "нет langreq: $ch" if $ch; 
 		print "/" if $ch and $ch2; 
 		print "нет перевода: $ch2" if $ch2;
 		print ") " if $ch or $ch2;
-		}
 	}
+}
 
 my $tables = {};
 my $select_test = 1;
@@ -1305,11 +1323,13 @@ sub sql_test {
 				$col2 =~ s/^[^\.]+\.//g if $col2 =~ /\./;
 				$sql_r .= "$tab - $col ($file)" . '\n' if !exists($db_hash->{$tab2}->{$col2}); 
 				$sql_num++;
-		}}}
+			}
+		}
+	}
 		
 	$vars->get_system->pheader($vars);
 	if ($sql_r) { print $sql_r; } else { print "ok|$sql_num"; };
-	}
+}
 
 sub get_db_hash
 # //////////////////////////////////////////////////
@@ -1324,10 +1344,11 @@ sub get_db_hash
    		for my $row2 (@$rws2) {	
    			$row->[0] = lc($row->[0]);
    			$row2->[0] = lc($row2->[0]);
-   			$hash->{$row->[0]}->{$row2->[0]} = 1; }
+   			$hash->{$row->[0]}->{$row2->[0]} = 1;
 		}
-	return $hash;
 	}
+	return $hash;
+}
 	
 sub search_all_query
 # //////////////////////////////////////////////////
@@ -1335,7 +1356,7 @@ sub search_all_query
 	chomp $_;
 	return if $_ eq '.' or $_ eq '..';
 	query_search_files($_) if (-f);
-	}
+}
 
 sub query_search_files
 # //////////////////////////////////////////////////
@@ -1376,8 +1397,8 @@ sub query_search_files
 			$conti = 1 if !/;/ and /SELECT/i; 
 			$conti_insert = 1 if !/;/ and /INSERT.*?\(.*?\).*?VALUES/i;
 			$conti_update = 1 if !/;/ and /UPDATE.*?SET.*?WHERE/i;
-			}				
-		}
+		}				
+	}
 	close TMP;
 	
 	@sql = () if !$select_test;
@@ -1411,10 +1432,10 @@ sub query_search_files
 					s/SELECT(\s|,)+$1/SELECT /i; }
 				else { s/\*//g; }; 
 				s/SELECT[\s,]+FROM//gi;
-				}
-			s/FROM//i;
 			}
-		} 
+			s/FROM//i;
+		}
+	} 
 		
 	for(@sql_insert) {
 		s/.*?INSERT//i;
@@ -1429,8 +1450,8 @@ sub query_search_files
 			$tables->{$filename}->{$current_t}->{$_2} = '(insert)';
 			s/$_2//i; 
 			s/\([\s,]*\)\s*VALUES//gi;
-			}
-		} 	
+		}
+	} 	
 
 	for(@sql_update) {
 		s/^.*?[^T]UPDATE/UPDATE/i;
@@ -1444,10 +1465,10 @@ sub query_search_files
 			$tables->{$filename}->{$current_t}->{$_2} = '(update)';
 			s/$_2.*?(\s|,)//i; 
 			s/SET[\s,]*WHERE//gi;
-			}
-		} 	
+		}
+	} 	
 	
-	}
+}
 
 sub get_aid
 # //////////////////////////////////////////////////
@@ -1473,10 +1494,10 @@ sub get_aid
 			update Appointments set AppDate = curdate() where ID = ?", 
 			{}, $id_app);
 		print $id_app.'|'.$id_app_data;
-		}
+	}
 	else {
 		print "db error";
-		};
+	};
 }
 
 sub test_and_clean_doc
@@ -1548,7 +1569,7 @@ sub syntax_all_folder
 	chomp $_;
 	return if $_ eq '.' or $_ eq '..';
 	syntax_files($_) if (-f);
-	}
+}
 
 sub syntax_files
 # //////////////////////////////////////////////////
@@ -1560,9 +1581,10 @@ sub syntax_files
 			$synax_num++;
 			if (!(`perl -c -I '/usr/local/www/data/htdocs/vcs/lib/' $filename 2>&1` =~ /syntax OK/)) {		
 				$syntax_err .= $filename." (ошибки синтаксиса)\\n";
-				}
-		} }
+			}
+		} 
 	}
+}
 
 sub test_update
 # //////////////////////////////////////////////////
@@ -2336,6 +2358,28 @@ sub fix_dates_str
 	return $fixdate, $fixdate_num;
 }
 	
+sub default_config
+# //////////////////////////////////////////////////
+{
+	my $vars = shift;
+	my $test_num = shift;
+	my $conf = shift;
+
+	if  (ref($conf) eq "HASH") {
+		for (keys (%$conf)) {
+			my $r = $vars->db->query("
+				INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+				{}, $test_num, $_, $conf->{$_});
+		}
+	} else {
+		for (@$conf) {
+			my $r = $vars->db->query("
+				INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
+				{}, $test_num, $_, 1);
+		};
+	}
+};
+	
 sub settings_default
 # //////////////////////////////////////////////////
 {
@@ -2403,18 +2447,16 @@ sub settings_default
 		'juridicals/payment.htm',	'juridicals/edit_contract.htm',	'juridicals/delivery.htm',
 		'juridicals/find_jname.htm',	'juridicals/find_bname.htm',	'juridicals/find_agr.htm',
 		'juridicals/find_pass.htm',	'juridicals/schengen_reg.htm',	'vcs/index.htm',
-		'vcs/new.htm',			'vcs/new0.htm',			'vcs/new1.htm',
-		'vcs/new2.htm',			'vcs/new_v.htm',		'vcs/info_v.htm',
 		'vcs/get_vtypes.htm',		'vcs/get_times.htm',		'vcs/info.htm',
 		'vcs/success.htm',		'vcs/reschedule.htm',		'vcs/cancel.htm',
-		'vcs/status.htm',		'vcs/get_nearest.htm',		'vcs/ivr.htm',
-		'vcs/get_binfo.htm',		'vcs/show_a.htm',		'vcs/new_anketa.htm',
+		'vcs/status.htm',		'vcs/get_nearest.htm',
+		'vcs/new_anketa.htm',
 		'vcs/feedback.htm',		'vcs/short_form.htm',		'vcs/check_payment.htm',
 		'vcs/long_form.htm',		'vcs/link_schengen.htm',	'vcs/print_receipt.htm',
 		'vcs/send_app.htm',		'vcs/showlist.htm',		'vcs/load_foredit.htm',
 		'vcs/num_current.htm',		'vcs/list_contract.htm',	'vcs/send_appointment.htm',
 		'vcs/confirm_app.htm',		'vcs/del_app.htm',		'vcs/find_pcode.htm',
-		'vcs/tmp_print.htm',		'vcs/appinfo.htm',		'vcs/show_print_est.htm',
+		'vcs/appinfo.htm',		'vcs/show_print_est.htm',
 		'vcs/post_price.htm',		'agency/index.htm',		'agency/login.htm',
 		'agency/newnt.htm',		'agency/editnt.htm',		'agency/shownt.htm',
 		'agency/regnt.htm',		'agency/confirm.htm',		'agency/updtnt.htm',
@@ -2930,20 +2972,16 @@ sub settings_default
 	my $db_connect = VCS::Config->getConfig();
 
 	my $r = $vars->db->query("
-			CREATE TABLE Autotest (ID INT NOT NULL AUTO_INCREMENT
+			CREATE TABLE Autotest (ID INT NOT NULL AUTO_INCREMENT,
 			Test VARCHAR(6), Param VARCHAR(50), Value VARCHAR(256), PRIMARY KEY (ID))", {});
-	
+
 	# TT	
 	for (@$tt_adr_default) {
 		my $r = $vars->db->query("
 			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)", 
 			{}, 'test9', 'page_adr', $_); };
 	
-	my $r = $vars->db->query("
-			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
-			{}, 'test9', 'settings_test_ref', 1);
-	my $r = $vars->db->query('INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)', 
-			{}, 'test9', 'settings_test_404', 1);
+	default_config($vars, 'test9', ['settings_test_ref', 'settings_test_404']);
 	
 	# TS
 	
@@ -2951,31 +2989,12 @@ sub settings_default
 		my $r = $vars->db->query("
 			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
 			{}, 'test1', 'centers', $_); };
-			
-	my $r = $vars->db->query("
-			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
-			{}, 'test1', 'settings_test_null', 1);
-	my $r = $vars->db->query("
-			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
-			{}, 'test1', 'settings_test_error', 1);
-	my $r = $vars->db->query("
-			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
-			{}, 'test1', 'day_slots_test', 10);
-	my $r = $vars->db->query("
-			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
-			{}, 'test1', 'far_far_day', 1);
+	
+	default_config($vars, 'test1', {'settings_test_null' => 1, 'settings_test_error' => 1, 'day_slots_test' => 10, 'far_far_day' => 1});
 	
 	# SQL
 	
-	my $r = $vars->db->query("
-			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
-			{}, 'test7', 'settings_test_select', 1);
-	my $r = $vars->db->query("
-			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
-			{}, 'test7', 'settings_test_insert', 1);
-	my $r = $vars->db->query("
-			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
-			{}, 'test7', 'settings_test_update', 1);
+	default_config($vars, 'test7', ['settings_test_select', 'settings_test_insert', 'settings_test_update']);
 	
 	# MT
 	for (@$modul_tests) {
@@ -2984,39 +3003,17 @@ sub settings_default
 			{}, 'test5', $_, 1); };
 	
 	# UP
-	my $r = $vars->db->query("
-			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
-			{}, 'test11', 'settings_test_oldlist', 1);
-	my $r = $vars->db->query("
-			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
-			{}, 'test11', 'settings_test_difeuro', 1);
-	my $r = $vars->db->query("
-			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
-			{}, 'test11', 'settings_test_difper', 5);
-	my $r = $vars->db->query("
-			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
-			{}, 'test11', 'settings_test_difday', 0);
+	
+	default_config($vars, 'test11', {'settings_test_oldlist' => 1, 'settings_test_difeuro' => 1, 
+		'settings_test_difper' => 5, 'settings_test_difday' => 0});
 	
 	# SY
 	
-	my $r = $vars->db->query("
-			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
-			{}, 'test10', 'settings_perlc', 1);
+	default_config($vars, 'test10', ['settings_perlc']);
 	
 	# TR
 	
-	my $r = $vars->db->query("
-			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
-			{}, 'test6', 'settings_rb_langreq', 1);
-	my $r = $vars->db->query("
-			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
-			{}, 'test6', 'settings_rb_comm', 1);
-	my $r = $vars->db->query("
-			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
-			{}, 'test6', 'settings_dict_langreq', 1);
-	my $r = $vars->db->query("
-			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
-			{}, 'test6', 'settings_dict_getLangVar', 1);
+	default_config($vars, 'test6', ['settings_rb_langreq', 'settings_rb_comm', 'settings_dict_langreq', 'settings_dict_getLangVar']);
 	
 	# RP
 	
@@ -3026,15 +3023,7 @@ sub settings_default
 			{}, 'test4', $_, 1);
 			};
 	
-	my $r = $vars->db->query("
-			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
-			{}, 'test4', 'settings_format_pdf', 1);
-	my $r = $vars->db->query("
-			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
-			{}, 'test4', 'settings_format_zip', 1);
-	my $r = $vars->db->query("
-			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
-			{}, 'test4', 'settings_format_xml', 1);
+	default_config($vars, 'test4', ['settings_format_pdf', 'settings_format_zip', 'settings_format_xml']);
 	
 	# AA
 	
@@ -3049,15 +3038,8 @@ sub settings_default
 				{}, 'test3', 'settings_collect_name_'.$test, 'встроенный набор параметров '.$test ); 
 		};
 	
-	my $r = $vars->db->query("
-			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
-			{}, 'test3', 'settings_collect_num', scalar(keys %$test_addapp));
-	my $r = $vars->db->query("
-			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
-			{}, 'test3', 'settings_autodate', 1);
-	my $r = $vars->db->query("
-			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
-			{}, 'test3', 'settings_fixdate', '');
+	default_config($vars, 'test3', {'settings_collect_num' => scalar(keys %$test_addapp), 'settings_autodate' => 1, 
+		'settings_fixdate' => '',});
 	
 	# SF
 	
@@ -3080,21 +3062,8 @@ sub settings_default
 			};  
 		};
 	
-	my $r = $vars->db->query("
-			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
-			{}, 'test2', 'settings_collect_num', scalar(keys %$test_short_form_step1));
-	my $r = $vars->db->query("
-			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
-			{}, 'test2', 'settings_autodate', 1);
-	my $r = $vars->db->query("
-			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
-			{}, 'test2', 'settings_appdate', '');
-	my $r = $vars->db->query("
-			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
-			{}, 'test2', 'settings_fixdate_s', '');
-	my $r = $vars->db->query("
-			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
-			{}, 'test2', 'settings_fixdate_e', '');
+	default_config($vars, 'test2', { 'settings_collect_num' => scalar(keys %$test_short_form_step1), 'settings_autodate' => 1, 
+		'settings_appdate' => '', 'settings_fixdate_s' => '', 'settings_fixdate_e' => '',});
 	
 	# TC
 	for my $test ( keys %$test_contract ) {
@@ -3109,22 +3078,9 @@ sub settings_default
 				{}, 'test8', 'settings_collect_name_'.$test, 'встроенный набор параметров '.$test ); 
 		};
 	
-	my $r = $vars->db->query("
-			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
-			{}, 'test8', 'settings_collect_num', scalar(keys %$test_contract));
-	my $r = $vars->db->query("
-			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
-			{}, 'test8', 'settings_fixdate_s', '');
-	my $r = $vars->db->query("
-			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
-			{}, 'test8', 'settings_fixdate_e', '');
-	my $r = $vars->db->query("
-			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
-			{}, 'test8', 'settings_concildate', '');
-	my $r = $vars->db->query("
-			INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
-			{}, 'test8', 'settings_autodate', 1);
-			
+	default_config($vars, 'test8', {'settings_collect_num' => scalar(keys %$test_contract), 'settings_fixdate_s' => '', 
+		'settings_fixdate_e' => '', 'settings_concildate' => '', 'settings_autodate' => 1,});
+		
 	return 1;	
 	}
 
