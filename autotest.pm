@@ -142,7 +142,7 @@ sub autotest
 	my $centers_arr =  get_settings_list( $vars, 'test1', 'centers' );
 	my $centers = join ',', map { $_ = "'$_->[0]'" } @$centers_arr;
 	
-	my $centers_names_arr =  get_settings_list( $vars, 'test1', 'centers' );
+	my $centers_names_arr = get_settings_list( $vars, 'test1', 'centers' );
 	my $centers_names = join ',', map { $_ = "'".get_center_name($vars, $_->[0])."'" } @$centers_names_arr;
 
 	# RP
@@ -157,8 +157,6 @@ sub autotest
 	
 	my $test3_collection = '';
 	my $settings_fixdate_num = 0;
-	
-
 	
 	if ( $settings->{fixdate} ) {
 		( $settings->{fixdate}, $settings_fixdate_num ) = fix_dates_str( $settings->{fixdate} ); 
@@ -181,9 +179,9 @@ sub autotest
 	}
 
 	if ( $settings->{test2_fixdate_s} ) {
-		( $settings->{test2_fixdate_s}, $settings->{test2_fixdate_num} ) = fix_dates_str( $settings->{test2_fixdate_s} );
-		( $settings->{test2_fixdate_e}, $settings->{test2_fixdate_num} ) = fix_dates_str( $settings->{test2_fixdate_e} );
-		( $settings->{test2_appdate}, $settings->{test2_appdate_num} ) = fix_dates_str( $settings->{test2_appdate} ); 
+		( $settings->{test2_fixdate_s}, $settings_test2_fixdate_num ) = fix_dates_str( $settings->{test2_fixdate_s} );
+		( $settings->{test2_fixdate_e}, $settings_test2_fixdate_num ) = fix_dates_str( $settings->{test2_fixdate_e} );
+		( $settings->{test2_appdate}, $settings_test2_appdate_num ) = fix_dates_str( $settings->{test2_appdate} ); 
 	};
 
 	# TC
@@ -193,9 +191,9 @@ sub autotest
 	my $settings_test8_concildate_num = 0;
 
 	if ( $settings->{test8_fixdate_s} ) {
-		( $settings->{test8_fixdate_s}, $settings->{test8_fixdate_num} ) = fix_dates_str($settings->{test8_fixdate_s} );
-		( $settings->{test8_fixdate_e}, $settings->{test8_fixdate_num} ) = fix_dates_str($settings->{test8_fixdate_e} ); 
-		( $settings->{test8_concildate}, $settings->{test8_concildate_num} ) = fix_dates_str($settings->{test8_concildate} ); 
+		( $settings->{test8_fixdate_s}, $settings_test8_fixdate_num ) = fix_dates_str($settings->{test8_fixdate_s} );
+		( $settings->{test8_fixdate_e}, $settings_test8_fixdate_num ) = fix_dates_str($settings->{test8_fixdate_e} ); 
+		( $settings->{test8_concildate}, $settings_test8_concildate_num ) = fix_dates_str($settings->{test8_concildate} ); 
 	}
 	
 	for ( 1..$settings->{collect8_num} ) {
@@ -252,26 +250,25 @@ sub settings
 	
 	if ($edit eq 'TT') {
 		$title_add = 'Проверка страниц';
-		my $tt_adr_hash = $vars->db->selall("
+		my $tt_adr_arr = $vars->db->selall("
 			SELECT ID, Value FROM Autotest WHERE Test = ? AND Param = ?", 
 			'test9', 'page_adr');
 		
-		$settings .= '<b>настройки проверок</b><br><br>';
-		my ($id, $value) = get_settings($vars, 'test9', 'settings_test_ref');
-		$settings .= settings_form_bool($id, 'проверять ссылки (REF, ARRAY и т.п.) вместо данных', $value, 'TT');
-		($id, $value) = get_settings($vars, 'test9', 'settings_test_404');
-		$settings .= settings_form_bool($id, 'проверять недоступность страниц', $value, 'TT');
+		$settings .= title('настройки проверок');
+		$settings .= settings_form_bool($vars, 'test9', 'settings_test_ref', 
+			'проверять ссылки (REF, ARRAY и т.п.) вместо данных', 'TT');
+		$settings .= settings_form_bool($vars, 'test9', 'settings_test_404', 
+			'проверять недоступность страниц', 'TT');
 		
-		$settings .= '<b>добавить новую страницу в список проверяемых</b><br><br>';
+		$settings .= title('добавить новую страницу в список проверяемых');
 		$settings .= settings_form_str_add('добавить страницу', 'test9', 'page_adr', 'TT' );
 		
-		$settings .= '<b>список проверяемых</b><br><br>';
-		for my $hash_addr (@$tt_adr_hash) {
-			my ($id, $adr) = @$hash_addr;
+		$settings .= title('список проверяемых');
+		for my $addr (@$tt_adr_arr) {
 			$settings .= 
-				'<input type="button" id="settings_'.$id.'" value="удалить" '.
-				'onclick="location.pathname='."'".'/autotest/settings_del.htm?did='.$id.
-				'&ret=TT'."'".'">&nbsp;'.$adr.'<br><br>';
+				'<input type="button" id="settings_'.$addr->[0].'" value="удалить" '.
+				'onclick="location.pathname='."'".'/autotest/settings_del.htm?did='.$addr->[0].
+				'&ret=TT'."'".'">&nbsp;'.$addr->[1].'<br><br>';
 		}	
 	}
 	
@@ -281,22 +278,21 @@ sub settings
 			SELECT ID, Value FROM Autotest WHERE Test = ? AND Param = ?", 
 			'test1', 'centers');
 		
-		$settings .= '<b>настройки проверок</b><br><br>';
-		my ($id, $value) = get_settings($vars, 'test1', 'settings_test_error');
-		$settings .= settings_form_bool($id, 'проверять ошибки/невозможность записаться', $value, 'TS');
-		($id, $value) = get_settings($vars, 'test1', 'settings_test_null');
-		$settings .= settings_form_bool($id, 'проверять пустые списки временных интервалов', $value, 'TS');
-		($id, $value) = get_settings($vars, 'test1', 'far_far_day');
-		$settings .= settings_form_bool($id, 'проверять отдалённый день', $value, 'TS');
+		$settings .= title('настройки проверок');
+		$settings .= settings_form_bool($vars, 'test1', 'settings_test_error', 
+			'проверять ошибки/невозможность записаться', 'TS');
+		$settings .= settings_form_bool($vars, 'test1', 'settings_test_null', 
+			'проверять пустые списки временных интервалов', 'TS');
+		$settings .= settings_form_bool($vars, 'test1', 'far_far_day', 
+			'проверять отдалённый день', 'TS');
 		
-		$settings .= '<b>количество календарных дней для проверки</b><br><br>';
-		($id, $value) = get_settings($vars, 'test1', 'day_slots_test');
-		$settings .= settings_form_str_chng('изменить', $id, $value,  'TS');
+		$settings .= title('количество календарных дней для проверки');
+		$settings .= settings_form_str_chng($vars, 'test1', 'day_slots_test', 'изменить', 'TS');
 		
-		$settings .= '<b>добавить новый центр в список проверяемых (по номеру)</b><br><br>';
+		$settings .= title('добавить новый центр в список проверяемых (по номеру)');
 		$settings .= settings_form_str_add('добавить центр', 'test1', 'centers', 'TS' );
 		
-		$settings .= '<b>список проверяемых центров</b><br><br>';
+		$settings .= title('список проверяемых центров');
 		for my $center (@$centers) {
 			my ($id, $cnt) = @$center;
 			my $bname = get_center_name($vars, $cnt);
@@ -311,13 +307,10 @@ sub settings
 	if ($edit eq 'SQL') {
 		$title_add = 'Проверка SQL-запросов';
 		
-		$settings .= '<b>настройки проверок</b><br><br>';
-		my ($id, $value) = get_settings($vars, 'test7', 'settings_test_select');
-		$settings .= settings_form_bool($id, 'проверять SELECT-запросы', $value, 'SQL');
-		($id, $value) = get_settings($vars, 'test7', 'settings_test_insert');
-		$settings .= settings_form_bool($id, 'проверять INSERT-запросы', $value, 'SQL');
-		($id, $value) = get_settings($vars, 'test7', 'settings_test_update');
-		$settings .= settings_form_bool($id, 'проверять UPDATE-запросы', $value, 'SQL');
+		$settings .= title('настройки проверок');
+		$settings .= settings_form_bool($vars, 'test7', 'settings_test_select', 'проверять SELECT-запросы', 'SQL');
+		$settings .= settings_form_bool($vars, 'test7', 'settings_test_insert', 'проверять INSERT-запросы', 'SQL');
+		$settings .= settings_form_bool($vars, 'test7', 'settings_test_update', 'проверять UPDATE-запросы', 'SQL');
 	}
 		
 	if ($edit eq 'MT') {
@@ -325,85 +318,69 @@ sub settings
 		my $modul_hash = $vars->db->selall("
 			SELECT ID, Param FROM Autotest WHERE Test = ?", 'test5');
 		
-		$settings .= '<b>включение/отключение отдельных тестов</b><br><br>';
+		$settings .= title('включение/отключение отдельных тестов');
 
 		for my $modul (@$modul_hash) {
-			my ($nn_id, $modul_name) = @$modul;
-			my ($id, $value) = get_settings($vars, 'test5', $modul_name);
-			$settings .= settings_form_bool($id, $modul_name, $value, 'MT');
+			$settings .= settings_form_bool($vars, 'test5', $modul->[1], $modul->[1], 'MT');
 		}	
 	}
 		
 	if ($edit eq 'UP') {
 		$title_add = 'Проверка состояний';
 		
-		$settings .= '<b>настройки проверок</b><br><br>';
+		$settings .= title('настройки проверок');
 
-		my ($id, $value) = get_settings($vars, 'test11', 'settings_test_oldlist');
-		$settings .= settings_form_bool($id, 'проверять отсутствие актуальных прайсов', $value, 'UP');
-		($id, $value) = get_settings($vars, 'test11', 'settings_test_difeuro');
-		$settings .= settings_form_bool($id, 'проверять отклонение евро от актуального прайса', $value, 'UP');
+		$settings .= settings_form_bool($vars, 'test11', 'settings_test_oldlist', 'проверять отсутствие актуальных прайсов', 'UP');
+		$settings .= settings_form_bool($vars, 'test11', 'settings_test_difeuro', 'проверять отклонение евро от актуального прайса', 'UP');
 		
-		$settings .= '<b>процент допустимого отклонение евро от актуального прайса</b><br><br>';
-		($id, $value) = get_settings($vars, 'test11', 'settings_test_difper');
-		$settings .= settings_form_str_chng('изменить', $id, $value,  'UP');
+		$settings .= title('процент допустимого отклонение евро от актуального прайса');
+		$settings .= settings_form_str_chng($vars, 'test11', 'settings_test_difper', 'изменить', 'UP');
 		
-		$settings .= '<b>количество дней актуальности прайса</b><br><br>';
-		($id, $value) = get_settings($vars, 'test11', 'settings_test_difday');
-		$settings .= settings_form_str_chng('изменить', $id, $value,  'UP');
+		$settings .= title('количество дней актуальности прайса');
+		$settings .= settings_form_str_chng($vars, 'test11', 'settings_test_difday', 'изменить', 'UP');
 	}
 		
 	if ($edit eq 'SY') {
 		$title_add = 'Проверка синтаксиса';
 		
-		$settings .= '<b>настройки проверок</b><br><br>';
+		$settings .= title('настройки проверок');
 
-		my ($id, $value) = get_settings($vars, 'test10', 'settings_perlc');
-		$settings .= settings_form_bool($id, 'проверять с помощью perl -c', $value, 'SY');
+		$settings .= settings_form_bool($vars, 'test10', 'settings_perlc', 'проверять с помощью perl -c', 'SY');
 	}
 	
 	if ($edit eq 'TR') {
 		$title_add = 'Проверка перевода';
 		
-		$settings .= '<b>поиск русских букв без вызова подпрограмм перевода</b><br><br>';
+		$settings .= title('поиск русских букв без вызова подпрограмм перевода');
 		
-		my ($id, $value) = get_settings($vars, 'test6', 'settings_rb_langreq');
-		$settings .= settings_form_bool($id, 
-			'без вызова langreq / getLangSesVar / getGLangVar / getLangVar', $value, 'TR');
-		($id, $value) = get_settings($vars, 'test6', 'settings_rb_comm');
-		$settings .= settings_form_bool($id, 'игнорировать закомментированное', $value, 'TR');
+		$settings .= settings_form_bool($vars, 'test6', 'settings_rb_langreq',
+			'без вызова langreq / getLangSesVar / getGLangVar / getLangVar', 'TR');
+		$settings .= settings_form_bool($vars, 'test6', 'settings_rb_comm', 'игнорировать закомментированное', 'TR');
 		
-		$settings .= '<b>отсутствие в словаре перевода</b><br><br>';
+		$settings .= title('отсутствие в словаре перевода');
 		
-		($id, $value) = get_settings($vars, 'test6', 'settings_dict_langreq');
-		$settings .= settings_form_bool($id, 'для langreq', $value, 'TR');
-		($id, $value) = get_settings($vars, 'test6', 'settings_dict_getLangVar');
-		$settings .= settings_form_bool($id, 'для getLangVar', $value, 'TR');
+		$settings .= settings_form_bool($vars, 'test6', 'settings_dict_langreq', 'для langreq', 'TR');
+		$settings .= settings_form_bool($vars, 'test6', 'settings_dict_getLangVar', 'для getLangVar', 'TR');
 	}
 		
 	if ($edit eq 'RP') {
 		$title_add = 'Доступность отчётов';
 		
-		$settings .= '<b>допустимые форматы отчётов</b><br><br>';
+		$settings .= title('допустимые форматы отчётов');
 		
-		my ($id, $value) = get_settings($vars, 'test4', 'settings_format_xml');
-		$settings .= settings_form_bool($id, 'XML', $value, 'RP');
-		($id, $value) = get_settings($vars, 'test4', 'settings_format_pdf');
-		$settings .= settings_form_bool($id, 'PDF', $value, 'RP');
-		($id, $value) = get_settings($vars, 'test4', 'settings_format_zip');
-		$settings .= settings_form_bool($id, 'ZIP', $value, 'RP');
+		$settings .= settings_form_bool($vars, 'test4', 'settings_format_xml', 'XML', 'RP');
+		$settings .= settings_form_bool($vars, 'test4', 'settings_format_pdf', 'PDF', 'RP');
+		$settings .= settings_form_bool($vars, 'test4', 'settings_format_zip', 'ZIP', 'RP');
 		
 		my $report_hash = $vars->db->selall("
 			SELECT ID, Param FROM Autotest WHERE Test = ? AND Param != 'settings_format_xml' 
 			AND Param != 'settings_format_zip' and Param != 'settings_format_pdf'", 
 			'test4');
 		
-		$settings .= '<b>включение/отключение проверки конкретных отчётов</b><br><br>';
+		$settings .= title('включение/отключение проверки конкретных отчётов');
 
 		for my $report (@$report_hash) {
-			my ($nn_id, $report_name) = @$report;
-			my ($id, $value) = get_settings($vars, 'test4', $report_name);
-			$settings .= settings_form_bool($id, $report_name, $value, 'RP');
+			$settings .= settings_form_bool($vars, 'test4', $report->[1], $report->[1], 'RP');
 		}	
 	}
 	
@@ -416,22 +393,20 @@ sub settings
 		
 		if (!$collect and !$del and !$add) {
 		
-			$settings .= '<b>настройки проверок</b><br><br>';
-			my ($did, $value) = get_settings($vars, 'test3', 'settings_autodate');
-			$settings .= settings_form_bool($did, 'автоматический выбор даты', $value, 'AA');
+			$settings .= title('настройки проверок');
+			$settings .= settings_form_bool($vars, 'test3', 'settings_autodate', 'автоматический выбор даты', 'AA');
 		
-			$settings .= '<b>список дат подачи заявки (в формате "дд.мм.гггг, дд.мм.гггг, ...") '.
-				'при выключенном автовыборе</b><br><br>';
-			($did, $value) = get_settings($vars, 'test3', 'settings_fixdate');
-			$value = '' if !$value;
-			$settings .= settings_form_str_chng('сохранить', $did, $value, 'AA' );
+			$settings .= title('список дат подачи заявки (в формате "дд.мм.гггг, дд.мм.гггг, ...") '.
+				'при выключенном автовыборе');
+				
+			$settings .= settings_form_str_chng($vars, 'test3', 'settings_fixdate', 'сохранить', 'AA' );
 		
-			$settings .= 	'<b>добавить новый набор данных для проверки</b><br><br>'.
+			$settings .= 	title('добавить новый набор данных для проверки').
 					'<input type="button" id="collect_add" value="добавить"'.
 					' onclick="location.href=\'/autotest/settings.htm?edit=AA&add=1\'"><br><br>'.
-					'<b>наборы данных для проверки</b><br><br>';
+					title('наборы данных для проверки');
 
-			($did, my $settings_collect3_num) = get_settings($vars, 'test3', 'settings_collect_num');
+			my ($did, $settings_collect3_num) = get_settings($vars, 'test3', 'settings_collect_num');
 
 			for (1..$settings_collect3_num) {
 				($did, my $settings_collect_name) = get_settings($vars, 'test3', 
@@ -445,7 +420,7 @@ sub settings
 					'settings_collect_name_'.$collect);
 					
 			$settings .= 	'<form action="/autotest/collect_chng.htm">'.
-					'<b>название набора:</b><br><br><input type="edit" '.
+					title('название набора:').'<input type="edit" '.
 					'name="collect_new_name" value="'.$settings_collect_name.
 					'" size="43"><br><br><input type="hidden" name="collect_name_id" '.
 					'value="'.$did.'"><b>набор данных для проверки:</b><br>';
@@ -519,33 +494,27 @@ sub settings
 		
 		if (!$collect and !$del and !$add) {
 		
-			$settings .= '<b>настройки проверок</b><br><br>';
-			my ($did, $value) = get_settings($vars, 'test2', 'settings_autodate');
-			$settings .= settings_form_bool($did, 'автоматический выбор даты', $value, 'SF');
+			$settings .= title('настройки проверок');
+			$settings .= settings_form_bool($vars, 'test2', 'settings_autodate', 'автоматический выбор даты', 'SF');
 		
-			$settings .= '<b>список дат для проверки (в формате "дд.мм.гггг, дд.мм.гггг, ...") '.
-				'при выключенном автовыборе</b><br><br>';
+			$settings .= title('список дат для проверки (в формате "дд.мм.гггг, дд.мм.гггг, ...") '.
+				'при выключенном автовыборе');
+			
 			$settings .= 'даты заявки<br>';
-			($did, $value) = get_settings($vars, 'test2', 'settings_appdate');
-			$value = '' if !$value;
-			$settings .= settings_form_str_chng('сохранить', $did, $value, 'SF' );
+			$settings .= settings_form_str_chng($vars, 'test2', 'settings_appdate',	'сохранить', 'SF' );
 			
 			$settings .= 'даты начала поездки<br>';
-			($did, $value) = get_settings($vars, 'test2', 'settings_fixdate_s');
-			$value = '' if !$value;
-			$settings .= settings_form_str_chng('сохранить', $did, $value, 'SF' );
+			$settings .= settings_form_str_chng($vars, 'test2', 'settings_fixdate_s', 'сохранить', 'SF' );
 			
 			$settings .= 'даты окончания поездки<br>';
-			($did, $value) = get_settings($vars, 'test2', 'settings_fixdate_e');
-			$value = '' if !$value;
-			$settings .= settings_form_str_chng('сохранить', $did, $value, 'SF' );
+			$settings .= settings_form_str_chng($vars, 'test2', 'settings_fixdate_e', 'сохранить', 'SF' );
 		
-			$settings .= 	'<b>добавить новый набор данных для проверки</b><br><br>'.
+			$settings .= 	title('добавить новый набор данных для проверки').
 					'<input type="button" id="collect_add" value="добавить"'.
 					' onclick="location.href=\'/autotest/settings.htm?edit=SF&add=1\'"><br><br>'.
-					'<b>наборы данных для проверки</b><br><br>';
+					title('наборы данных для проверки');
 
-			($did, my $settings_collect2_num) = get_settings($vars, 'test2', 'settings_collect_num');
+			my ($did, $settings_collect2_num) = get_settings($vars, 'test2', 'settings_collect_num');
 
 			for (1..$settings_collect2_num) {
 				($did, my $settings_collect_name) = get_settings($vars, 'test2', 
@@ -559,7 +528,7 @@ sub settings
 					'settings_collect_name_'.$collect);
 					
 			$settings .= 	'<form action="/autotest/collect_chng.htm">'.
-					'<b>название набора:</b><br><br><input type="edit" '.
+					title('название набора:').'<input type="edit" '.
 					'name="collect_new_name" value="'.$settings_collect_name.
 					'" size="43"><br><br><input type="hidden" name="collect_name_id" '.
 					'value="'.$did.'"><b>набор данных для проверки: ПЕРВЫЙ ШАГ:</b><br>';
@@ -658,34 +627,28 @@ sub settings
 		
 		if (!$collect and !$del and !$add) {
 		
-			$settings .= '<b>настройки проверок</b><br><br>';
-			my ($did, $value) = get_settings($vars, 'test8', 'settings_autodate');
-			$settings .= settings_form_bool($did, 'автоматический выбор даты', $value, 'TC');
+			$settings .= title('настройки проверок');
+			$settings .= settings_form_bool($vars, 'test8', 'settings_autodate', 'автоматический выбор даты', 'TC');
 		
-			$settings .= '<b>список дат подачи заявки (в формате "дд.мм.гггг, дд.мм.гггг, ...") '.
-				'при выключенном автовыборе</b><br><br>';
+			$settings .= title('список дат подачи заявки (в формате "дд.мм.гггг, дд.мм.гггг, ...") '.
+				'при выключенном автовыборе');
+				
 			$settings .= 'даты начала поездки<br>';
-			($did, $value) = get_settings($vars, 'test8', 'settings_fixdate_s');
-			$value = '' if !$value;
-			$settings .= settings_form_str_chng('сохранить', $did, $value, 'TC' );
+			$settings .= settings_form_str_chng($vars, 'test8', 'settings_fixdate_s', 'сохранить', 'TC' );
 			
 			$settings .= 'даты окончания поездки<br>';
-			($did, $value) = get_settings($vars, 'test8', 'settings_fixdate_e');
-			$value = '' if !$value;
-			$settings .= settings_form_str_chng('сохранить', $did, $value, 'TC' );
+			$settings .= settings_form_str_chng($vars, 'test8', 'settings_fixdate_e', 'сохранить', 'TC' );
 		
-			$settings .= '<b>даты оплаты консульского сбора (в формате "дд.мм.гггг, дд.мм.гггг, ...") '.
-				'при выключенном автовыборе</b><br><br>';
-			($did, $value) = get_settings($vars, 'test8', 'settings_concildate');
-			$value = '' if !$value;
-			$settings .= settings_form_str_chng('сохранить', $did, $value, 'TC' );
+			$settings .= title('даты оплаты консульского сбора (в формате "дд.мм.гггг, дд.мм.гггг, ...") '.
+				'при выключенном автовыборе');
+			$settings .= settings_form_str_chng($vars, 'test8', 'settings_concildate', 'сохранить', 'TC');
 		
-			$settings .= 	'<b>добавить новый набор данных для проверки</b><br><br>'.
+			$settings .= 	title('добавить новый набор данных для проверки').
 					'<input type="button" id="collect_add" value="добавить"'.
 					' onclick="location.href=\'/autotest/settings.htm?edit=TC&add=1\'"><br><br>'.
-					'<b>наборы данных для проверки</b><br><br>';
+					title('наборы данных для проверки');
 
-			($did, my $settings_collect8_num) = get_settings($vars, 'test8', 'settings_collect_num');
+			my ($did, $settings_collect8_num) = get_settings($vars, 'test8', 'settings_collect_num');
 
 			for (1..$settings_collect8_num) {
 				($did, my $settings_collect_name) = get_settings($vars, 'test8', 
@@ -699,7 +662,7 @@ sub settings
 					'settings_collect_name_'.$collect);
 					
 			$settings .= 	'<form action="/autotest/collect_chng.htm">'.
-					'<b>название набора:</b><br><br><input type="edit" '.
+					title('название набора:').'<input type="edit" '.
 					'name="collect_new_name" value="'.$settings_collect_name.
 					'" size="43"><br><br><input type="hidden" name="collect_name_id" '.
 					'value="'.$did.'"><b>набор данных для проверки:</b><br>';
@@ -928,14 +891,22 @@ sub get_settings_collection
 	return $test_collection;
 }
 
+sub title
+# //////////////////////////////////////////////////
+{
+	return '<b>' . shift . '</b><br><br>';
+}
+
 sub settings_form_bool
 # //////////////////////////////////////////////////
 {
-
-	my $did = shift;
+	my $vars = shift;
+	my $test_name = shift;
+	my $test_value = shift;
 	my $name = shift;
-	my $current_value = shift;
 	my $ret_addr = shift;
+	
+	my ($did, $current_value) = get_settings($vars, $test_name, $test_value);
 	
 	my $res_str =   '<form action="/autotest/settings_chng.htm">'.
 			'<input type="submit" id="settings_chng" value="'.($current_value ? 'отключить' : 'включить').'">'.
@@ -965,13 +936,20 @@ sub settings_form_str_add
 sub settings_form_str_chng
 # //////////////////////////////////////////////////
 {
+	my $vars = shift;
+	my $test_name = shift;
+	my $test_value = shift;
+	
+	my ($did, $current_value) = get_settings($vars, $test_name, $test_value);
+	$current_value = '' if !$current_value;
+
 	my $res_str =   '<form action="/autotest/settings_chng.htm">'.
 			'<input type="submit" id="settings_add" value="'.shift.'">'.
-			'<input type="hidden" name="did" value="'.shift.'">'.
-			'&nbsp;<input type="edit" name="value" value="'.shift.'">'.
+			'<input type="hidden" name="did" value="'.$did.'">'.
+			'&nbsp;<input type="edit" name="value" value="'.$current_value.'">'.
 			'<input type="hidden" name="ret" value="'.shift.'">'.
 			'</form><br>';
-
+	
 	return $res_str;
 }
 
@@ -1002,7 +980,7 @@ sub settings_form_add_into_collect
 		'<input type="hidden" name="ret" value="'.$ret.'">'.
 		'<input type="submit" id="collect_submit" '.
 		'value="сохранить изменения"></form><br>'.
-		'<b>добавить новое поле в набор:</b><br><br>'.
+		title('добавить новое поле в набор:') .
 		'<form action="/autotest/collect_add.htm">'.
 		'<input type="edit" name="param"> = <input type="edit" name="value"><br><br>'.
 		'<input type="hidden" name="test" value="'.$test_num.'">'.
