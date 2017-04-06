@@ -80,8 +80,8 @@ sub autotest
 	if (!$settings_exist) {
 		settings_default($vars);
 		$first_time_alert = "alert('Модуль самотестирования запущен впервые, подключена новая БД или ".
-				"данные настроек были утеряны.\\nВ текущей БД " . $db_name . " создана таблица ".
-				"Autotest с настройками по умолчанию.');";
+			"данные настроек были утеряны.\\nВ текущей БД $db_name создана таблица Autotest ".
+			"с настройками по умолчанию.');";
 	};
 		
 	my $id_from_docpack = $vars->db->sel1("select ID from DocPack where PassNum = '101010AUTOTEST'");
@@ -104,78 +104,68 @@ sub autotest
 	
 	# TT
 	
-	my $tt_adr_hash = $vars->db->selall("
-		SELECT Value FROM Autotest WHERE Test = ? AND Param = ?", 'test9', 'page_adr');
-	my $tt_adr = '';
-	for my $hash_addr (@$tt_adr_hash) {
-		my ($adr) = @$hash_addr;
-		$tt_adr .= "'".$adr."', "; 
-	}	
-
-	($did, my $settings_test9_ref) = get_settings($vars, 'test9', 'settings_test_ref');
-	($did, my $settings_test9_404) = get_settings($vars, 'test9', 'settings_test_404');
+	my $tt_adr_arr = get_settings_list( $vars, 'test9', 'page_adr' );
+	my $tt_adr = join ',', map { $_ = "'$_->[0]'" } @$tt_adr_arr;
 	
+	my $settings = {};
+	my $get_setting_general = {
+		'test9_ref' => [ 'test9', 'settings_test_ref' ],
+		'test9_404' => [ 'test9', 'settings_test_404' ],
+		'test1_null' => [ 'test1', 'settings_test_null' ],
+		'test1_error' => [ 'test1', 'settings_test_error' ],
+		'day_slots_test' => [ 'test1', 'day_slots_test' ],
+		'far_far_day' => [ 'test1', 'far_far_day' ],
+		'test4_xml' => [ 'test4', 'settings_format_xml' ],
+		'test4_pdf' => [ 'test4', 'settings_format_pdf' ],
+		'test4_zip' => [ 'test4', 'settings_format_zip' ],
+		'collect3_num' => [ 'test3', 'settings_collect_num' ],
+		'autodate' => [ 'test3', 'settings_autodate' ],
+		'fixdate' => [ 'test3', 'settings_fixdate' ],
+		'collect2_num' => [ 'test2', 'settings_collect_num' ],
+		'test2_autodate' => [ 'test2', 'settings_autodate' ],
+		'test2_appdate' => [ 'test2', 'settings_appdate' ],
+		'test2_fixdate_s' => [ 'test2', 'settings_fixdate_s' ],
+		'test2_fixdate_e' => [ 'test2', 'settings_fixdate_e' ],
+		'collect8_num' => [ 'test8', 'settings_collect_num' ],
+		'test8_fixdate_s' => [ 'test8', 'settings_fixdate_s' ],
+		'test8_fixdate_e' => [ 'test8', 'settings_fixdate_e' ],
+		'test8_concildate' => [ 'test8', 'settings_concildate' ],
+		'test8_autodate' => [ 'test8', 'settings_autodate' ],
+	};
+	
+	for my $set (keys %$get_setting_general) {
+		( $did, $settings->{$set} ) = get_settings( $vars, $get_setting_general->{ $set } );
+	}
+
 	# TS
 	
-	my $centers_hash = $vars->db->selall("
-		SELECT Value FROM Autotest WHERE Test = ? AND Param = ?", 'test1', 'centers');
-	my $centers = '';
-	my $centers_names = '';
+	my $centers_arr =  get_settings_list( $vars, 'test1', 'centers' );
+	my $centers = join ',', map { $_ = "'$_->[0]'" } @$centers_arr;
 	
-	for my $hash_addr (@$centers_hash) {
-		my ($cnt) = @$hash_addr;
-		$centers .= $cnt.", ";
-		$centers_names .= "'".get_center_name($vars, $cnt)."', "; 
-	}	
-	
-	($did, my $settings_test1_null) = get_settings($vars, 'test1', 'settings_test_null');
-	($did, my $settings_test1_error) = get_settings($vars, 'test1', 'settings_test_error');
-	($did, my $day_slots_test) = get_settings($vars, 'test1', 'day_slots_test');
-	($did, my $far_far_day) = get_settings($vars, 'test1', 'far_far_day');
-	
+	my $centers_names_arr =  get_settings_list( $vars, 'test1', 'centers' );
+	my $centers_names = join ',', map { $_ = "'".get_center_name($vars, $_->[0])."'" } @$centers_names_arr;
+
 	# RP
 	
-	my $repen_hash = $vars->db->selall("
+	my $repen_arr = $vars->db->selall("
 		SELECT Value FROM Autotest WHERE Test = ? AND Param != 'settings_format_xml' 
 		AND Param != 'settings_format_zip' AND Param != 'settings_format_pdf'", 'test4');
 	
-	my $report_enabled = '';
-	
-	for my $rep_en (@$repen_hash) {
-		my ($rep_en2) = @$rep_en;
-		$report_enabled .= ($rep_en2 ? "1" : "0").", "; 
-	}
-	
-	($did, my $settings_test4_xml) = get_settings($vars, 'test4', 'settings_format_xml');
-	($did, my $settings_test4_pdf) = get_settings($vars, 'test4', 'settings_format_pdf');
-	($did, my $settings_test4_zip) = get_settings($vars, 'test4', 'settings_format_zip');
+	my $report_enabled = join ',', map { $_ = ( $_->[0] ? 1 : 0 ) } @$repen_arr;
 	
 	# AA
 	
 	my $test3_collection = '';
 	my $settings_fixdate_num = 0;
 	
-	($did, my $settings_collect3_num) = get_settings($vars, 'test3', 'settings_collect_num');
-	($did, my $settings_autodate) = get_settings($vars, 'test3', 'settings_autodate');
-	($did, my $settings_fixdate) = get_settings($vars, 'test3', 'settings_fixdate');
+
 	
-	if ($settings_fixdate) {
-		($settings_fixdate, $settings_fixdate_num) = fix_dates_str($settings_fixdate); 
+	if ( $settings->{fixdate} ) {
+		( $settings->{fixdate}, $settings_fixdate_num ) = fix_dates_str( $settings->{fixdate} ); 
 	};
 	
-	for (1..$settings_collect3_num) {
-		$test3_collection .= "'";
-		
-		my $coll_hash = $vars->db->selallkeys("
-			SELECT Param, Value FROM Autotest WHERE Test = ? AND Param LIKE ?", 
-			'test3', $_.':%');
-		
-		for my $coll_pair (@$coll_hash) {
-			$coll_pair->{Param} =~ s/^[^:]+?://;
-			$test3_collection .= '&' . $coll_pair->{Param} . '=' . $coll_pair->{Value}; 
-		}	
-		
-		$test3_collection .= "', ";
+	for ( 1..$settings->{collect3_num} ) {
+		$test3_collection .= "'" . get_settings_collection( $vars, 'test3', $_ ) . "', ";
 	}
 	
 	# SF
@@ -185,43 +175,15 @@ sub autotest
 	my $settings_test2_fixdate_num = 0;
 	my $settings_test2_appdate_num = 0;
 	
-	($did, my $settings_collect2_num) = get_settings($vars, 'test2', 'settings_collect_num');
-	
-	for (1..$settings_collect2_num) {
-		$test2A_collection .= "'";
-		$test2B_collection .= "'";
-		
-		my $coll_hash = $vars->db->selallkeys("
-			SELECT Param, Value FROM Autotest WHERE Test = ? AND Param LIKE ?", 
-			'test2A', $_.':%');
-		
-		for my $coll_pair (@$coll_hash) {
-			$coll_pair->{Param} =~ s/^[^:]+?://;
-			$test2A_collection .= '&' . $coll_pair->{Param} . '=' . $coll_pair->{Value}; 
-		}	
-		
-		$coll_hash = $vars->db->selallkeys("
-			SELECT Param, Value FROM Autotest WHERE Test = ? AND Param LIKE ?", 
-			'test2B', $_.':%');
-		
-		for my $coll_pair (@$coll_hash) {
-			$coll_pair->{Param} =~ s/^[^:]+?://;
-			$test2B_collection .= '&' . $coll_pair->{Param} . '=' . $coll_pair->{Value}; 
-		}	
-		
-		$test2A_collection .= "', ";
-		$test2B_collection .= "', ";
+	for ( 1..$settings->{collect2_num} ) {
+		$test2A_collection .= "'" . get_settings_collection( $vars, 'test2A', $_ ) . "', ";
+		$test2B_collection .= "'" . get_settings_collection( $vars, 'test2B', $_ ) . "', ";
 	}
 
-	($did, my $settings_test2_autodate) = get_settings($vars, 'test2', 'settings_autodate');
-	($did, my $settings_test2_appdate) = get_settings($vars, 'test2', 'settings_appdate');
-	($did, my $settings_test2_fixdate_s) = get_settings($vars, 'test2', 'settings_fixdate_s');
-	($did, my $settings_test2_fixdate_e) = get_settings($vars, 'test2', 'settings_fixdate_e');
-
-	if ($settings_test2_fixdate_s) {
-		($settings_test2_fixdate_s, $settings_test2_fixdate_num) = fix_dates_str($settings_test2_fixdate_s);
-		($settings_test2_fixdate_e, $settings_test2_fixdate_num) = fix_dates_str($settings_test2_fixdate_e);
-		($settings_test2_appdate, $settings_test2_appdate_num) = fix_dates_str($settings_test2_appdate); 
+	if ( $settings->{test2_fixdate_s} ) {
+		( $settings->{test2_fixdate_s}, $settings->{test2_fixdate_num} ) = fix_dates_str( $settings->{test2_fixdate_s} );
+		( $settings->{test2_fixdate_e}, $settings->{test2_fixdate_num} ) = fix_dates_str( $settings->{test2_fixdate_e} );
+		( $settings->{test2_appdate}, $settings->{test2_appdate_num} ) = fix_dates_str( $settings->{test2_appdate} ); 
 	};
 
 	# TC
@@ -229,34 +191,16 @@ sub autotest
 	my $test8_collection = '';
 	my $settings_test8_fixdate_num = 0;
 	my $settings_test8_concildate_num = 0;
-	
-	($did, my $settings_collect8_num) = get_settings($vars, 'test8', 'settings_collect_num');
-	($did, my $settings_test8_fixdate_s) = get_settings($vars, 'test8', 'settings_fixdate_s');
-	($did, my $settings_test8_fixdate_e) = get_settings($vars, 'test8', 'settings_fixdate_e');
-	($did, my $settings_test8_concildate) = get_settings($vars, 'test8', 'settings_concildate');
-	($did, my $settings_test8_autodate) = get_settings($vars, 'test8', 'settings_autodate');
 
-	if ($settings_test8_fixdate_s) {
-		($settings_test8_fixdate_s, $settings_test8_fixdate_num) = fix_dates_str($settings_test8_fixdate_s);
-		($settings_test8_fixdate_e, $settings_test8_fixdate_num) = fix_dates_str($settings_test8_fixdate_e); 
-		($settings_test8_concildate, $settings_test8_concildate_num) = fix_dates_str($settings_test8_concildate); 
+	if ( $settings->{test8_fixdate_s} ) {
+		( $settings->{test8_fixdate_s}, $settings->{test8_fixdate_num} ) = fix_dates_str($settings->{test8_fixdate_s} );
+		( $settings->{test8_fixdate_e}, $settings->{test8_fixdate_num} ) = fix_dates_str($settings->{test8_fixdate_e} ); 
+		( $settings->{test8_concildate}, $settings->{test8_concildate_num} ) = fix_dates_str($settings->{test8_concildate} ); 
 	}
 	
-	for (1..$settings_collect8_num) {
-		$test8_collection .= "'";
-		
-		my $coll_hash = $vars->db->selallkeys("
-			SELECT Param, Value FROM Autotest WHERE Test = ? AND Param LIKE ?", 
-			'test8', $_.':%');
-		
-		for my $coll_pair (@$coll_hash) {
-			$coll_pair->{Param} =~ s/^[^:]+?://;
-			$test8_collection .= '&' . $coll_pair->{Param} . '=' . $coll_pair->{Value}; 
-		}	
-		
-		$test8_collection .= "', ";
+	for ( 1..$settings->{collect8_num} ) {
+		$test8_collection .= "'" . get_settings_collection( $vars, 'test8', $_ ) . "', ";
 	}
-	
 
 	$vars->get_system->pheader($vars);
 	my $tvars = {
@@ -268,53 +212,28 @@ sub autotest
 		'form' => {
 				'action' => $vars->getform('action')
 				},
-				
 		'tt_adr' => $tt_adr,
-		
 		'first_time_alert' => $first_time_alert,
-		
-		'settings_test_ref' => $settings_test9_ref,
-		'settings_test_404' => $settings_test9_404,
-		'settings_test_null' => $settings_test1_null,
-		'settings_test_error' => $settings_test1_error,
-		'day_slots_test' => $day_slots_test,
-		'far_far_day' => $far_far_day,
-		
-		'settings_test_xml' => $settings_test4_xml,
-		'settings_test_pdf' => $settings_test4_pdf,
-		'settings_test_zip' => $settings_test4_zip,
-		
-		'settings_autodate' => $settings_autodate,
-		'settings_fixdate' => $settings_fixdate,
-		'settings_fixdate_num' => $settings_fixdate_num,
-		'settings_collect3_num' => $settings_collect3_num,
+		'fixdate_num' => $settings_fixdate_num,
 		'test3_collection' => $test3_collection,
-		
-		'settings_collect2_num' => $settings_collect2_num,
 		'test2a_collection' => $test2A_collection,
 		'test2b_collection' => $test2B_collection,
-		'settings_test2_autodate' => $settings_test2_autodate,
-		'settings_test2_fixdate_s' => $settings_test2_fixdate_s,
-		'settings_test2_fixdate_e' => $settings_test2_fixdate_e,
-		'settings_test2_fixdate_num' => $settings_test2_fixdate_num,
-		'settings_test2_appdate' => $settings_test2_appdate,
-		'settings_test2_appdate_num' => $settings_test2_appdate_num,
-		
+		'test2_fixdate_num' => $settings_test2_fixdate_num,
+		'test2_appdate_num' => $settings_test2_appdate_num,
 		'test8_collection' => $test8_collection,
-		'settings_collect8_num' => $settings_collect8_num,
-		'settings_test8_fixdate_s' => $settings_test8_fixdate_s,
-		'settings_test8_fixdate_e' => $settings_test8_fixdate_e,
-		'settings_test8_fixdate_num' => $settings_test8_fixdate_num,
-		'settings_test8_autodate' => $settings_test8_autodate,
-		'settings_test8_concildate' => $settings_test8_concildate, 
-		'settings_test8_concildate_num' => $settings_test8_concildate_num,
-		
+		'test8_fixdate_num' => $settings_test8_fixdate_num,
+		'test8_concildate_num' => $settings_test8_concildate_num,
 		'report_enabled'=> $report_enabled,
 		'centers' => $centers,
 		'centers_names'	=> $centers_names,
 		'session' => $vars->get_session,
 		'menu' => $vars->admfunc->get_menu($vars)
 	};
+	
+	for (keys %$settings) {
+		$tvars->{$_} = $settings->{$_};
+	}
+	
 	$template->process('autotest.tt2',$tvars);
 }
 
@@ -972,6 +891,41 @@ sub get_settings
 	$test_value = 0 if (!$test_value);
 
 	return $test_id, $test_value;
+}
+
+sub get_settings_list
+# //////////////////////////////////////////////////
+{
+	my $vars = shift;
+	my $test_name = shift;
+	my $param_name = shift;
+	
+	my $arr = $vars->db->selall("
+		SELECT Value FROM Autotest WHERE Test = ? AND Param = ?", 
+		$test_name, $param_name);
+
+	return $arr;
+}
+
+sub get_settings_collection
+# //////////////////////////////////////////////////
+{
+	my $vars = shift;
+	my $test_name = shift;
+	my $param_name = shift;
+	
+	my $test_collection = '';
+
+	my $coll_hash = $vars->db->selallkeys("
+		SELECT Param, Value FROM Autotest WHERE Test = ? AND Param LIKE ?", 
+		$test_name, $param_name.':%');
+	
+	for my $coll_pair (@$coll_hash) {
+		$coll_pair->{Param} =~ s/^[^:]+?://;
+		$test_collection .= '&' . $coll_pair->{Param} . '=' . $coll_pair->{Value}; 
+	}
+		
+	return $test_collection;
 }
 
 sub settings_form_bool

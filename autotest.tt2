@@ -112,8 +112,8 @@ function TestTimeSlots()
 	var void_found = 0;
 	var err_list = '';
 	var check = 0;	
-	var test_null = [% settings_test_null %];
-	var test_error = [% settings_test_error %];
+	var test_null = [% test_null %];
+	var test_error = [% test_error %];
 
 	for(var a = 0; a < centers.length; a++) {
 		for(var b = 0; b < dates.length; b++) {
@@ -182,17 +182,17 @@ function TestShortForm()
 	var far_far_away1 = getNormalDay(150);
 	var far_far_away2 = getNormalDay(200);
 	
-	var settings_fixdate_s = [ [% settings_test2_fixdate_s %] ];
-	var settings_fixdate_e = [ [% settings_test2_fixdate_e %] ];
-	var settings_test2_fix_num = [% settings_test2_fixdate_num %];
-	var settings_test2_autodate = [% settings_test2_autodate %];
-	var settings_appdate = [ [% settings_test2_appdate %] ];
-	var settings_appdate_num = [ [% settings_test2_appdate_num %] ];
+	var settings_fixdate_s = [ [% test2_fixdate_s %] ];
+	var settings_fixdate_e = [ [% test2_fixdate_e %] ];
+	var settings_test2_fix_num = [% test2_fixdate_num %];
+	var settings_test2_autodate = [% test2_autodate %];
+	var settings_appdate = [ [% test2_appdate %] ];
+	var settings_appdate_num = [ [% test2_appdate_num %] ];
 	
 	var code = '30208ce0cfc95cd1ec2d091b5f4e6638';
 	var captcha = 'dhepdn';
 	
-	var test_num = [% settings_collect2_num %];
+	var test_num = [% collect2_num %];
 	var test2a_collection = [ [% test2a_collection %] ];
 	var test2b_collection = [ [% test2b_collection %] ];
 	
@@ -335,12 +335,12 @@ function TestAppAdd()
 
 	var err_found = '';
 	
-	var test_num = [% settings_collect3_num %];
+	var test_num = [% collect3_num %];
 	var test_collection = [ [% test3_collection %] ];
 	
-	var settings_autodate = [% settings_autodate %];
-	var settings_fixdate = [ [% settings_fixdate %] ];
-	var settings_fixdate_num = [% settings_fixdate_num %];
+	var settings_autodate = [% autodate %];
+	var settings_fixdate = [ [% fixdate %] ];
+	var settings_fixdate_num = [% fixdate_num %];
 	var fixdate_index = 0;
 	
 	for (var test = 1; test <= test_num; test++) { 
@@ -388,17 +388,17 @@ function TestContract()
 
 	var err_found = '';
 	
-	var test_num = [% settings_collect8_num %];
+	var test_num = [% collect8_num %];
 	var test_collection = [ [% test8_collection %] ];
 	
-	var settings_fixdate_s = [ [% settings_test8_fixdate_s %] ];
-	var settings_fixdate_e = [ [% settings_test8_fixdate_e %] ];
+	var settings_fixdate_s = [ [% test8_fixdate_s %] ];
+	var settings_fixdate_e = [ [% test8_fixdate_e %] ];
 	var fixdate_index = 0;
-	var settings_test8_fix_num = [% settings_test8_fixdate_num %];
-	var settings_test8_autodate = [% settings_test8_autodate %];
+	var settings_test8_fix_num = [% test8_fixdate_num %];
+	var settings_test8_autodate = [% test8_autodate %];
 	
-	var settings_concildate = [ [% settings_test8_concildate %] ];
-	var settings_concildate_num = [% settings_test8_concildate_num %];
+	var settings_concildate = [ [% test8_concildate %] ];
+	var settings_concildate_num = [% test8_concildate_num %];
 	var fixconcil_index = 0;
 	
 	var far_far_away1;
@@ -512,9 +512,9 @@ function CheckReports()
 	var rep1date = getNormalDay(1);
 	var rep2date = getNormalDay(2);
 	
-	var en_xml = [% settings_test_xml %];
-	var en_pdf = [% settings_test_pdf %];
-	var en_zip = [% settings_test_zip %];
+	var en_xml = [% test_xml %];
+	var en_pdf = [% test_pdf %];
+	var en_zip = [% test_zip %];
 	
 	var report_adr = [	
 		'fpvms.htm?sdate='+rep1date+'&center=1&ptype=1&create=Создать отчёт',
@@ -740,8 +740,8 @@ function TestTT()
 	
 	var tt_adr = [ [% tt_adr %] ];
 	
-	var check_ref = [% settings_test_ref %];
-	var check_404 = [% settings_test_404 %];
+	var check_ref = [% test_ref %];
+	var check_404 = [% test_404 %];
 	
 	for(var a = 0; a < tt_adr.length; a++) {
 		$('#status_test9').html('идёт проверка... ' + (a+1) + ' / ' + tt_adr.length + ' ( ' + tt_adr[a] + ' )');
