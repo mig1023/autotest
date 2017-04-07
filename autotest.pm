@@ -434,16 +434,20 @@ sub settings
 		elsif ($collect and $del) {
 			my $r = $vars->db->query("DELETE FROM Autotest WHERE Test = ? AND Param LIKE ?", {},
 				'test3', $collect.':%');
+				
 			$r = $vars->db->query("DELETE FROM Autotest WHERE Test = ? AND Param = ?", {},
 				'test3', 'settings_collect_name_'.$collect);
+				
 			my ($did, $value) = get_settings($vars, 'test3', 'settings_collect_num');
 			
 			if ($value > $collect) {
-				for my $col_renum(($collect+1)..$value) {
+				for my $col_renum( ($collect+1)..$value ) {
 					my $new_index = $col_renum - 1;
+					
 					my $coll_hash = $vars->db->selallkeys("
 						SELECT ID, Param FROM Autotest WHERE Test = ? AND Param LIKE ?", 
 						'test3', $col_renum.':%');
+						
 					for my $coll_pair (@$coll_hash) {
 						$coll_pair->{Param} =~ s/^[^:]+?://;
 						$r = $vars->db->query("
@@ -452,6 +456,7 @@ sub settings
 						}
 					($did, my $name_col) = get_settings($vars, 'test3', 
 						'settings_collect_name_'.$col_renum);
+						
 					$r = $vars->db->query("
 						UPDATE Autotest SET Param = ? WHERE ID = ?", {},
 						'settings_collect_name_'.$new_index, $did);						
@@ -467,16 +472,19 @@ sub settings
 			my ($did, $new_index) = get_settings($vars, 'test3', 'settings_collect_num');		
 			$new_index++;
 		
+			my $insert_arr = [
+				[ 'test3', 'settings_collect_name_'.$new_index, 'новый набор параметров '.$new_index ],
+				[ 'test3', $new_index.':whompass', '0808AUTOTEST' ],
+				[ 'test3', $new_index.':passnum-1', '0909AUTOTEST' ],
+			];
+		
+			for my $insert ( @$insert_arr ) {
+				my $r = $vars->db->query("
+					INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)", {},
+					@$insert );
+			}
+			
 			my $r = $vars->db->query("
-				INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)", {},
-				'test3', 'settings_collect_name_'.$new_index, 'новый набор параметров '.$new_index);
-			$r = $vars->db->query("
-				INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)", {},
-				'test3', $new_index.':whompass', '0808AUTOTEST');
-			$r = $vars->db->query("
-				INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)", {},
-				'test3', $new_index.':passnum-1', '0909AUTOTEST');
-			$r = $vars->db->query("
 				UPDATE Autotest SET Value = ? WHERE test = ? and Param = ?", {},
 				$new_index, 'test3', 'settings_collect_num');
 				
@@ -557,19 +565,25 @@ sub settings
 			my $r = $vars->db->query("
 				DELETE FROM Autotest WHERE Test = ? AND Param LIKE ?", {},
 				'test2', $collect.':%');
+				
 			$r = $vars->db->query("
 				DELETE FROM Autotest WHERE Test = ? AND Param = ?", {},
 				'test2', 'settings_collect_name_'.$collect);
+				
 			my ($did, $value) = get_settings($vars, 'test2', 'settings_collect_num');
 			
 			if ($value > $collect) {
 				for my $col_renum(($collect+1)..$value) {
+				
 					my $new_index = $col_renum - 1;
+					
 					my $coll_hash = $vars->db->selallkeys("
 						SELECT ID, Param FROM Autotest WHERE Test = ? AND Param LIKE ?",
 						'test2', $col_renum.':%');
+						
 					for my $coll_pair (@$coll_hash) {
 						$coll_pair->{Param} =~ s/^[^:]+?://;
+						
 						$r = $vars->db->query("
 							UPDATE Autotest SET Param = ? WHERE ID = ?", 
 							{}, $new_index.':'.$coll_pair->{Param}, 
@@ -577,6 +591,7 @@ sub settings
 					}
 					($did, my $name_col) = get_settings($vars, 'test2', 
 						'settings_collect_name_'.$col_renum);
+						
 					$r = $vars->db->query("
 						UPDATE Autotest SET Param = ? WHERE ID = ?", {},
 						'settings_collect_name_'.$new_index, $did);
@@ -594,22 +609,21 @@ sub settings
 			my ($did, $new_index) = get_settings($vars, 'test2', 'settings_collect_num');		
 			$new_index++;
 		
+			my $insert_arr = [
+				[ 'test2', 'settings_collect_name_'.$new_index, 'новый набор параметров '.$new_index ],
+				[ 'test2A', $new_index.':dovpassnum', '0808AUTOTEST' ],
+				[ 'test2A', $new_index.':app_1_passnum', '0909AUTOTEST' ],
+				[ 'test2B', $new_index.':dovpassnum', '0808AUTOTEST' ],
+				[ 'test2B', $new_index.':app_1_passnum', '0909AUTOTEST' ],
+			];
+		
+			for my $insert ( @$insert_arr ) {
+				my $r = $vars->db->query("
+					INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)", {},
+					@$insert );
+			}
+			
 			my $r = $vars->db->query("
-				INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)", {},
-				'test2', 'settings_collect_name_'.$new_index, 'новый набор параметров '.$new_index);
-			$r = $vars->db->query("
-				INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)", {},
-				'test2A', $new_index.':dovpassnum', '0808AUTOTEST');
-			$r = $vars->db->query("
-				INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)", {},
-				'test2A', $new_index.':app_1_passnum', '0909AUTOTEST');
-			$r = $vars->db->query("
-				INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)", {},
-				'test2B', $new_index.':dovpassnum', '0808AUTOTEST');
-			$r = $vars->db->query("
-				INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)", {},
-				'test2B', $new_index.':app_1_passnum', '0909AUTOTEST');
-			$r = $vars->db->query("
 				UPDATE Autotest SET Value = ? WHERE test = ? and Param = ?", {},
 				$new_index, 'test2', 'settings_collect_num');
 				
@@ -689,18 +703,23 @@ sub settings
 			
 			if ($value > $collect) {
 				for my $col_renum(($collect+1)..$value) {
+				
 					my $new_index = $col_renum - 1;
+					
 					my $coll_hash = $vars->db->selallkeys("
 						SELECT ID, Param FROM Autotest WHERE Test = ? AND Param LIKE ?",
 						'test8', $col_renum.':%');
+						
 					for my $coll_pair (@$coll_hash) {
 						$coll_pair->{Param} =~ s/^[^:]+?://;
+						
 						$r = $vars->db->query("
 							UPDATE Autotest SET Param = ? WHERE ID = ?",
 							{}, $new_index.':'.$coll_pair->{Param},	$coll_pair->{ID});
 					}
 					($did, my $name_col) = get_settings($vars, 'test8', 
 						'settings_collect_name_'.$col_renum);
+						
 					$r = $vars->db->query("
 						UPDATE Autotest SET Param = ? WHERE ID = ?", {},
 						'settings_collect_name_'.$new_index, $did);
@@ -717,13 +736,18 @@ sub settings
 			my ($did, $new_index) = get_settings($vars, 'test8', 'settings_collect_num');		
 			$new_index++;
 		
+			my $insert_arr = [
+				[ 'test8', 'settings_collect_name_'.$new_index, 'новый набор параметров '.$new_index ],
+				[ 'test8', $new_index.':mpass', '101010AUTOTEST' ],
+			];
+		
+			for my $insert ( @$insert_arr ) {
+				my $r = $vars->db->query("
+					INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)", {},
+					@$insert );
+			}
+
 			my $r = $vars->db->query("
-				INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)", {},
-				'test8', 'settings_collect_name_'.$new_index, 'новый набор параметров '.$new_index);
-			$r = $vars->db->query("
-				INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)", {},
-				'test8', $new_index.':mpass', '101010AUTOTEST');
-			$r = $vars->db->query("
 				UPDATE Autotest SET Value = ? WHERE test = ? and Param = ?", {},
 				$new_index, 'test8', 'settings_collect_num');
 				
@@ -766,6 +790,7 @@ sub settings_del
 	my $r = $vars->db->query("
 		DELETE FROM Autotest WHERE ID = ?",
 		{}, $del_id);
+		
 	$vars->get_system->redirect($vars->getform('fullhost').'/autotest/settings.htm?edit='.$ret);
 }
 
@@ -786,6 +811,7 @@ sub settings_add
 	my $r = $vars->db->query("
 		INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)", 
 		{}, $test, $param, $value);
+		
 	$vars->get_system->redirect($vars->getform('fullhost').'/autotest/settings.htm?edit='.$ret);
 }
 
@@ -805,6 +831,7 @@ sub settings_chng
 	my $r = $vars->db->query("
 		UPDATE Autotest SET Value=? WHERE ID = ?",
 		{}, $value, $did);
+		
 	$vars->get_system->redirect($vars->getform('fullhost').'/autotest/settings.htm?edit='.$ret);
 }
 
@@ -891,11 +918,7 @@ sub get_settings_collection
 	return $test_collection;
 }
 
-sub title
-# //////////////////////////////////////////////////
-{
-	return '<b>' . shift . '</b><br><br>';
-}
+
 
 sub settings_form_bool
 # //////////////////////////////////////////////////
@@ -906,16 +929,17 @@ sub settings_form_bool
 	my $name = shift;
 	my $ret_addr = shift;
 	
-	my ($did, $current_value) = get_settings($vars, $test_name, $test_value);
+	my ($did, $current_value) = get_settings( $vars, $test_name, $test_value );
 	
-	my $res_str =   '<form action="/autotest/settings_chng.htm">'.
-			'<input type="submit" id="settings_chng" value="'.($current_value ? 'отключить' : 'включить').'">'.
-			'<input type="hidden" name="ret" value="'.$ret_addr.'">'.
-			'<input type="hidden" name="did" value="'.$did.'">'.
-			'<input type="hidden" name="value" value="'.(!$current_value).'">'.
-			'&nbsp;'.$name.'&nbsp;<span class="ramka_'.( $current_value ? 
-			'green">&nbsp;включено&nbsp;' : 'red">&nbsp;отключено&nbsp;' ).
-			'</span></form><br>';
+	my $res_str =  	
+		form_html( "/autotest/settings_chng.htm" ).
+		input_html( "submit", "settings_chng", ( $current_value ? 'отключить' : 'включить' ) ) .
+		input_html( "hidden", "ret", $ret_addr ) .
+		input_html( "hidden", "did", $did ) .
+		input_html( "hidden", "value", (!$current_value) ) .
+		'&nbsp;' . $name . '&nbsp;<span class="ramka_' . 
+		( $current_value ? 'green">&nbsp;включено&nbsp;' : 'red">&nbsp;отключено&nbsp;' ) .
+		'</span></form><br>';
 
 	return $res_str;
 }
@@ -923,12 +947,15 @@ sub settings_form_bool
 sub settings_form_str_add
 # //////////////////////////////////////////////////
 {
-	my $res_str =   '<form action="/autotest/settings_add.htm">'.
-			'<input type="submit" id="settings_add" value="'.shift.'">'.
-			'<input type="hidden" name="test" value="'.shift.'">'.
-			'<input type="hidden" name="param" value="'.shift.'">'.
-			'<input type="hidden" name="ret" value="'.shift.'">'.
-			'&nbsp;<input type="edit" name="value"></form><br>';
+	my $res_str =   
+		form_html( "/autotest/settings_add.htm" ).
+		input_html( "submit", "settings_add", shift ) .
+		input_html( "hidden", "test", shift ) .
+		input_html( "hidden", "param", shift ) .
+		input_html( "hidden", "ret", shift ) .
+		'&nbsp;' . 
+		input_html( "edit", "value" ) . 
+		'</form><br>';
 
 	return $res_str;
 }
@@ -943,12 +970,15 @@ sub settings_form_str_chng
 	my ($did, $current_value) = get_settings($vars, $test_name, $test_value);
 	$current_value = '' if !$current_value;
 
-	my $res_str =   '<form action="/autotest/settings_chng.htm">'.
-			'<input type="submit" id="settings_add" value="'.shift.'">'.
-			'<input type="hidden" name="did" value="'.$did.'">'.
-			'&nbsp;<input type="edit" name="value" value="'.$current_value.'">'.
-			'<input type="hidden" name="ret" value="'.shift.'">'.
-			'</form><br>';
+	my $res_str = 
+		form_html( "/autotest/settings_chng.htm" ) .
+		input_html( "submit", "settings_add", shift ) .
+		input_html( "hidden", "did", $did ) .
+		'&nbsp;' .
+			
+		input_html( "edit", "value", $current_value ) .
+		input_html( "hidden", "ret", shift ).
+		'</form><br>';
 	
 	return $res_str;
 }
@@ -959,13 +989,18 @@ sub settings_form_collect
 	my $test_index = shift;
 	my $collect_num = shift;
 	my $collect_name = shift;
-	my $res_str = 	'<input type="button" id="collect_del" value="удалить"'.
-			' onclick="location.href=\'/autotest/settings.htm?edit='.$test_index.
-			'&collect='.$collect_num.'&del=1\'">'.
-			'&nbsp;&nbsp;<input type="button" id="collect_edit" value="изменить"'.
-			' onclick="location.href=\'/autotest/settings.htm?edit='.$test_index.
-			'&collect='.$collect_num.'\'">'.
-			'&nbsp;'.$collect_name.'<br><br>'."\n";
+	
+	my $res_str = 
+		input_html( "button", "collect_del", "удалить",
+		' onclick="location.href=\'/autotest/settings.htm?edit='.$test_index.
+		'&collect='.$collect_num.'&del=1\'"' ) .
+		'&nbsp;&nbsp;' .
+			
+		input_html( "button", "collect_edit", "изменить",
+		' onclick="location.href=\'/autotest/settings.htm?edit='.$test_index.
+		'&collect='.$collect_num.'\'"' ) .
+		'&nbsp;'.$collect_name.'<br><br>'."\n";
+		
 	return $res_str;
 }
 
@@ -976,17 +1011,19 @@ sub settings_form_add_into_collect
 	my $test_num = shift;
 	my $ret = shift;
 
-		'<input type="hidden" name="collect" value="'.$collect.'">'.
-		'<input type="hidden" name="ret" value="'.$ret.'">'.
-		'<input type="submit" id="collect_submit" '.
-		'value="сохранить изменения"></form><br>'.
-		title('добавить новое поле в набор:') .
-		'<form action="/autotest/collect_add.htm">'.
-		'<input type="edit" name="param"> = <input type="edit" name="value"><br><br>'.
-		'<input type="hidden" name="test" value="'.$test_num.'">'.
-		'<input type="hidden" name="collect" value="'.$collect.'">'.
-		'<input type="hidden" name="ret" value="'.$ret.'">'.
-		'<input type="submit" id="submit" value="добавить"></form><br>';
+	my $res_str = 
+		input_html( "hidden", "collect", $collect ) .
+		input_html( "hidden", "ret", $ret ) .
+		input_html( "submit", "collect_submit", "сохранить изменения" ) . '</form><br>'.
+		title( 'добавить новое поле в набор:' ) .
+		form_html( "/autotest/collect_add.htm" ) .
+		input_html( "edit", "param" ) . ' = ' . input_html( "edit", "value" ) . '<br><br>'.
+		input_html( "hidden", "test", $test_num ) , '>' .
+		input_html( "hidden", "collect", $collect) .
+		input_html( "hidden", "ret", $ret ) .
+		input_html( "submit", "submit", "добавить" ) . '</form><br>';
+	
+	return $res_str;
 }
 
 sub settings_full_collect
@@ -1003,7 +1040,7 @@ sub settings_full_collect
 	my $res_str = '';
 	my $index_param = 0;
 	
-	for my $coll_pair (sort {$a->{Param} cmp $b->{Param}} @$coll_hash) {
+	for my $coll_pair ( sort {$a->{Param} cmp $b->{Param}} @$coll_hash ) {
 		$index_param++;
 		$coll_pair->{Param} =~ s/^[^:]+?://;
 		
@@ -1012,16 +1049,34 @@ sub settings_full_collect
 			or ($coll_pair->{Value} eq '0909AUTOTEST') 
 			or ($coll_pair->{Value} eq '101010AUTOTEST');
 		
-		$res_str .=  '<input type="edit" name="param-'.$index_param.'" value="'.$coll_pair->{Param}.
-			'" '.($protect ? 'readonly class="edit_dis"' : '').'> = <input type="edit" name="value-'.
-			$index_param.'" value="'.$coll_pair->{Value}.'" '.
-			($protect ? 'readonly class="edit_dis"' : '').'><br><br>';
-		$res_str .= '<input type="hidden" name="id-'.$index_param.'" value="'.$coll_pair->{ID}.'">';
+		$res_str .=  
+			input_html( "edit", "param-".$index_param, $coll_pair->{Param}, ($protect ? 'readonly class="edit_dis"' : '') ) .' = '. 
+			input_html( "edit", "value-". $index_param, $coll_pair->{Value}, ($protect ? 'readonly class="edit_dis"' : '') ) .'<br><br>';
+		
+		$res_str .= input_html( "hidden", "id-".$index_param, $coll_pair->{ID} );
 		}	
 	
-	$res_str .= '<input type="hidden" name="num_param" value="'.$index_param.'">';
+	$res_str .= input_html( "hidden", "num_param", $index_param );
 		
 	return $res_str;
+}
+
+sub title
+# //////////////////////////////////////////////////
+{
+	return '<b>' . shift . '</b><br><br>';
+}
+
+sub form_html
+# //////////////////////////////////////////////////
+{
+	return '<form action="' . shift . '">'
+}
+
+sub input_html
+# //////////////////////////////////////////////////
+{
+	return '<input type="' . shift . '" id="' . shift . '" value="' . shift . '" '. shift .'>';
 }
 
 sub collect_add
@@ -1045,8 +1100,8 @@ sub collect_add
 		INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)", {},
 		$test , $collect.':'.$param, $value);
 	
-	$vars->get_system->redirect($vars->getform('fullhost').'/autotest/settings.htm?edit='.
-			$ret.'&collect='.$collect);
+	$vars->get_system->redirect(
+		$vars->getform('fullhost').'/autotest/settings.htm?edit='.$ret.'&collect='.$collect );
 }
 
 sub captcha_hack
@@ -1070,9 +1125,13 @@ sub captcha_hack
 	print $f_captcha time() . '::' . $code;
 	close $f_captcha;
 	
-	$vars->get_system->pheader($vars);	
-	print "ok" if !$err;
-	print "captcha error" if $err;
+	$vars->get_system->pheader($vars);
+	
+	unless ( $err ) { 
+		print "ok";
+	} else {
+		print "captcha error";
+	}
 }
 
 sub get_center_name
@@ -1102,16 +1161,20 @@ sub test_and_clean
 	my ($id_app_data) = $vars->db->sel1("
 		select ID from AppData where PassNum = '0909AUTOTEST'");
 	
-	$err = !(($id_app != 0) and ($id_app_data != 0));
+	$err = !( ($id_app != 0) and ($id_app_data != 0) );
 	
 	$vars->db->query("
 		delete from Appointments where PassNum = '0808AUTOTEST'", {});
 	$vars->db->query("
 		delete from AppData where PassNum = '0909AUTOTEST'", {});
 	
-	$vars->get_system->pheader($vars);	
-	print "ok" if !$err;
-	print "db error" if $err;
+	$vars->get_system->pheader($vars);
+	
+	unless ( $err ) { 
+		print "ok";
+	} else {
+		print "db error";
+	}
 }
 
 my $voc_cont = {};
@@ -1420,16 +1483,18 @@ sub get_aid
 		select ID from AppData where PassNum = '0909AUTOTEST'");
 	
 	$vars->get_system->pheader($vars);
+	
 	if ( ($id_app != 0) && ($id_app_data != 0) ) {
 
 		$err = $vars->db->query("
 			update Appointments set AppDate = curdate() where ID = ?", 
 			{}, $id_app);
+			
 		print $id_app.'|'.$id_app_data;
 	}
 	else {
 		print "db error";
-	};
+	}
 }
 
 sub test_and_clean_doc
@@ -1462,9 +1527,13 @@ sub test_and_clean_doc
 	$vars->db->query("
 		delete from DocPackList where PassNum = '0909AUTOTEST'");
 	
-	$vars->get_system->pheader($vars);	
-	print "ok" if !$err;
-	print "db error" if $err;
+	$vars->get_system->pheader($vars);
+	
+	unless ( $err ) { 
+		print "ok";
+	} else {
+		print "db error";
+	}
 }
 
 my $synax_num = 0;
@@ -1491,8 +1560,12 @@ sub test_syntax
 	find( \&syntax_all_folder, $path );
 	
 	$vars->get_system->pheader($vars);
-	print "ok|$synax_num" if !$syntax_err;
-	print $syntax_err if $syntax_err;
+	
+	unless ( $syntax_err ) { 
+		print "ok|$synax_num";
+	} else {
+		print $syntax_err;
+	}
 }
 
 sub syntax_all_folder
@@ -1571,8 +1644,12 @@ sub test_update
 	
 
 	$vars->get_system->pheader($vars);
-	print "ok" if !$err;
-	print $err if $err;
+	
+	unless ( $err ) { 
+		print "ok";
+	} else {
+		print $err;
+	}
 }
 
 sub fast_calc_consil
@@ -2241,9 +2318,13 @@ sub modultest
 	$err =~ s/(^(\s|\n)+|(\s|\n)+$)//g;
 	
 	$vars->get_system->pheader($vars);	
-	print "ok|$test_num" if !$err;
-	print $err if $err;
+
+	unless ( $err ) { 
+		print "ok|$test_num";
+	} else {
+		print $err;
 	}
+}
 
 sub test_hash
 # //////////////////////////////////////////////////
@@ -2254,29 +2335,38 @@ sub test_hash
 	
 	my $err = 0;
 	
-	for (@$pattern_ar) {
+	for ( @$pattern_ar ) {
 		$err = 1 if !exists($test_hash->{$_}); }
 	
-	if ($err) {
-		return $comment; }
-	else {	return '' };
+	if ( $err ) {
+		return $comment; 
+	} else {	
+		return '';
 	}
+}
 
 sub test_line
 # //////////////////////////////////////////////////
 {
-	if (shift ne shift) { return shift; }
-	else { return '' };
-	}
+	if ( shift ne shift ) { 
+		return shift; 
+	} else { 
+		return '';
+	};
+}
 
 sub test_line_substr
 # //////////////////////////////////////////////////
 {
 	my $str = shift;
 	my $sub_str = shift;
-	if (index($str, $sub_str) < 0) { return shift; }
-	else { return '' };
-	}
+	
+	if ( index($str, $sub_str) < 0 ) { 
+		return shift;
+	} else { 
+		return '';
+	};
+}
 
 sub fix_dates_str
 # //////////////////////////////////////////////////
@@ -2297,20 +2387,20 @@ sub default_config
 	my $test_num = shift;
 	my $conf = shift;
 
-	if  (ref($conf) eq "HASH") {
-		for (keys (%$conf)) {
+	if  ( ref($conf) eq "HASH" ) {
+		for ( keys (%$conf) ) {
 			my $r = $vars->db->query("
 				INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
 				{}, $test_num, $_, $conf->{$_});
 		}
 	} else {
-		for (@$conf) {
+		for ( @$conf ) {
 			my $r = $vars->db->query("
 				INSERT INTO Autotest (Test,Param,Value) VALUES (?,?,?)",
 				{}, $test_num, $_, 1);
 		};
 	}
-};
+}
 	
 sub settings_default
 # //////////////////////////////////////////////////
