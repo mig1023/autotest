@@ -250,6 +250,7 @@ sub settings
 	
 	if ($edit eq 'TT') {
 		$title_add = 'Проверка страниц';
+		
 		my $tt_adr_arr = $vars->db->selall("
 			SELECT ID, Value FROM Autotest WHERE Test = ? AND Param = ?", 
 			'test9', 'page_adr');
@@ -274,17 +275,22 @@ sub settings
 	
 	if ($edit eq 'TS') {
 		$title_add = 'Проверка временных интервалов';
+		
 		my $centers = $vars->db->selall("
 			SELECT ID, Value FROM Autotest WHERE Test = ? AND Param = ?", 
 			'test1', 'centers');
 		
 		$settings .= title('настройки проверок');
-		$settings .= settings_form_bool($vars, 'test1', 'settings_test_error', 
-			'проверять ошибки/невозможность записаться', 'TS');
-		$settings .= settings_form_bool($vars, 'test1', 'settings_test_null', 
-			'проверять пустые списки временных интервалов', 'TS');
-		$settings .= settings_form_bool($vars, 'test1', 'far_far_day', 
-			'проверять отдалённый день', 'TS');
+		
+		my $all_settings = {
+			'settings_test_error' => 'проверять ошибки/невозможность записаться',
+			'settings_test_null' => 'проверять пустые списки временных интервалов',
+			'far_far_day' => 'проверять отдалённый день',
+		};
+
+		for ( keys %$all_settings ) {
+			$settings .= settings_form_bool($vars, 'test1', $_, $all_settings->{ $_ }, 'TS');
+		}
 		
 		$settings .= title('количество календарных дней для проверки');
 		$settings .= settings_form_str_chng($vars, 'test1', 'day_slots_test', 'изменить', 'TS');
@@ -293,14 +299,15 @@ sub settings
 		$settings .= settings_form_str_add('добавить центр', 'test1', 'centers', 'TS' );
 		
 		$settings .= title('список проверяемых центров');
+		
 		for my $center (@$centers) {
 			my ($id, $cnt) = @$center;
 			my $bname = get_center_name($vars, $cnt);
-			
-			$settings .= 
-				'<input type="button" id="settings_'.$id.'" value="удалить" '.
-				'onclick="location.pathname='."'".'/autotest/settings_del.htm?did='.$id.
-				'&ret=TS'."'".'">&nbsp;'.$cnt.'&nbsp;('.$bname.')<br><br>'; 
+				
+			$settings .= input_html( "button", "settings_$id", "удалить", 
+					'onclick="location.pathname=' .
+					"'"."/autotest/settings_del.htm".'?'."did=$id&ret=TS'".'"' ) .
+					'&nbsp;'.$cnt.'&nbsp;('.$bname.')<br><br>'; 
 		}	
 	}
 		
@@ -308,13 +315,15 @@ sub settings
 		$title_add = 'Проверка SQL-запросов';
 		
 		$settings .= title('настройки проверок');
-		$settings .= settings_form_bool($vars, 'test7', 'settings_test_select', 'проверять SELECT-запросы', 'SQL');
-		$settings .= settings_form_bool($vars, 'test7', 'settings_test_insert', 'проверять INSERT-запросы', 'SQL');
-		$settings .= settings_form_bool($vars, 'test7', 'settings_test_update', 'проверять UPDATE-запросы', 'SQL');
+		
+		for ('select', 'insert', 'update') {
+			$settings .= settings_form_bool($vars, 'test7', "settings_test_$_", 'проверять '.uc($_).'-запросы', 'SQL');
+		}
 	}
 		
 	if ($edit eq 'MT') {
 		$title_add = 'Модульные тесты';
+		
 		my $modul_hash = $vars->db->selall("
 			SELECT ID, Param FROM Autotest WHERE Test = ?", 'test5');
 		
